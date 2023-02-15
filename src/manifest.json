@@ -1,0 +1,22 @@
+{
+  "name": "Quản trị viên Psyc",
+  "short_name": "Quản trị viên Psyc",
+  "display": "standalone",
+  "start_url": "./?utm_source=homescreen",
+  "theme_color": "#002140",
+  "background_color": "#001529",
+  "icons": [
+    {
+      "src": "https://psyc-customer.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogo1.b7bb490a.png&w=128&q=75",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://psyc-customer.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogo1.b7bb490a.png&w=128&q=75",
+      "sizes": "128x128"
+    },
+    {
+      "src": "https://psyc-customer.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogo1.b7bb490a.png&w=128&q=75",
+      "sizes": "512x512"
+    }
+  ]
+}
