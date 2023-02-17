@@ -7,7 +7,7 @@ import { PlusOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/ico
 import ModalForm from '@/components/ModalForm';
 import {
   getAnCustomer,
-  getCustomers,
+  GetBookingList,
   editCustomer,
   banUnbanCustomer,
 } from '@/services/UserService/customers';
@@ -20,118 +20,99 @@ import MapPicker from 'react-google-map-picker';
 const User = () => {
   //config column
   const column = [
+    // {
+    //   "id": 1,
+    //   "dateBooking": "2023-02-16T00:00:00",
+    //   "customerName": "Tester",
+    //   "birdOfCustomer": "Chim Sáo",
+    //   "dateStart": "2023-02-16T00:00:00",
+    //   "dateEnd": "2023-02-20T00:00:00",
+    //   "status": "waiting"
+    // }
     {
       title: 'STT',
-      dataIndex: 'number',
-      sorter: (a, b) => a.number - b.number,
-      search: false,
+      dataIndex: 'id',
+      key: 'id',
+      width: 50,
+      ellipsis: true,
     },
     {
-      title: 'Họ và tên',
-      dataIndex: 'fullname',
-      copyable: true,
-      valueType: 'fullname',
-      sorter: (a, b) => a.fullname.length - b.fullname.length,
-      filters: true,
-      onFilter: true,
-      formItemProps: {
-        rules: [
-          {
-            require: true,
-            message: 'Nhập tên người dùng để tìm kiếm',
-          },
-        ],
+      title: 'Tên khách hàng',
+      dataIndex: 'customerName',
+      key: 'customerName',
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: 'Ngày đặt',
+      dataIndex: 'dateBooking',
+      key: 'dateBooking',
+      width: 150,
+      ellipsis: true,
+      render: (_, record) => {
+        const start = dayjs(record.start).format('DD/MM/YYYY');
+        return (
+          <Space>
+            <Tag color="geekblue">{start}</Tag>
+          </Space>
+        );
       },
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      search: false,
-      copyable: true,
-      valueType: 'email',
-      sorter: (a, b) => a.email.length - b.email.length,
-      filters: true,
-      onFilter: true,
-      formItemProps: {
-        rules: [
-          {
-            require: true,
-            message: 'Enter phone number to search',
-          },
-        ],
+      title: 'Tên chim',
+      dataIndex: 'birdOfCustomer',
+      key: 'birdOfCustomer',
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: 'Ngày bắt đầu',
+      dataIndex: 'dateStart',
+      key: 'dateStart',
+      width: 150,
+      ellipsis: true,
+
+      // 2023-02-16
+      render: (_, record) => {
+        const start = dayjs(record.start).format('DD/MM/YYYY');
+        return (
+          <Space>
+            <Tag color="geekblue">{start}</Tag>
+          </Space>
+        );
+      },
+    },
+    {
+      title: 'Ngày kết thúc',
+      dataIndex: 'dateEnd',
+      key: 'dateEnd',
+      width: 150,
+      ellipsis: true,
+      render: (_, record) => {
+        const start = dayjs(record.start).format('DD/MM/YYYY');
+        return (
+          <Space>
+            <Tag color="geekblue">{start}</Tag>
+          </Space>
+        );
       },
     },
     {
       title: 'Trạng thái',
-      search: false,
       dataIndex: 'status',
-      valueType: 'select',
-      valueEnum: {
-        null: { text: 'Đang chờ', status: 'Default' },
-        active: { text: 'Hoạt động', status: 'Success' },
-        inactive: { text: 'Ngừng hoạt động', status: 'Error' },
-      },
-      width: '20%',
-    },
-
-    {
-      title: 'Hành động',
-      dataIndex: 'action',
-      search: false,
+      key: 'status',
+      width: 150,
+      ellipsis: true,
       render: (_, record) => {
-        return (
-          <div
-            style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <div
-              style={{
-                width: '50%',
-                marginRight: '8px',
-              }}
-            >
-              <Button
-                key="editUser"
-                type="primary"
-                size="middle"
-                icon={<EditOutlined />}
-                block={true}
-                onClick={() => handleEditUserForm(record)}
-              ></Button>
-            </div>
-            <div
-              style={{
-                width: '50%',
-                marginRight: '8px',
-              }}
-            >
-              {record.status === 'active' ? (
-                <Button
-                  key="editConsutanlt"
-                  type="danger"
-                  size="middle"
-                  icon={<EyeInvisibleOutlined />}
-                  block={true}
-                  onClick={() => handleEditStatus(record)}
-                ></Button>
-              ) : (
-                <Button
-                  key="editConsutanlt"
-                  // type màu xanh
-                  type="primary"
-                  size="middle"
-                  icon={<EyeOutlined />}
-                  block={true}
-                  onClick={() => handleEditStatus(record)}
-                ></Button>
-              )}
-            </div>
-          </div>
-        );
+        if (record.status === 'waiting') {
+          return <Tag color="yellow">Đang chờ</Tag>;
+        } else if (record.status === 'accept') {
+          return <Tag color="green">Đã chấp nhận</Tag>;
+        } else if (record.status === 'reject') {
+          return <Tag color="red">Đã từ chối</Tag>;
+        } else if (record.status === 'done') {
+          return <Tag color="geekblue">Đã hoàn thành</Tag>;
+        }
       },
     },
   ];
@@ -266,7 +247,7 @@ const User = () => {
       label: 'Ngày sinh',
       width: 'lg',
       placeholder: 'Chọn ngày sinh',
-      name: 'dob',
+      name: 'start',
       requiredField: 'true',
       ruleMessage: 'Nhập ngày',
     },
@@ -338,6 +319,9 @@ const User = () => {
   const [defaultLocation, setDefaultLocation] = useState(DefaultLocation);
   const [location, setLocation] = useState(defaultLocation);
   const [zoom, setZoom] = useState(DefaultZoom);
+
+  const accountId = 3;
+  localStorage.setItem('accountId', accountId);
 
   React.useEffect(() => {
     if (loadingUploadImgFirebase) {
@@ -453,12 +437,12 @@ const User = () => {
   };
 
   const handleSubmitFormUser = async (values) => {
-    const tempDOB = dayjs(values.dob).format('YYYY-MM-DDTHH:mm:ss');
+    const tempstart = dayjs(values.start).format('YYYY-MM-DDTHH:mm:ss');
     setButtonEditLoading(true);
     await editCustomer({
       ...values,
       id: userRecord.id,
-      dob: tempDOB,
+      start: tempstart,
       latitude: values.latitude.toString(),
       longitude: values.longitude.toString(),
     });
@@ -510,12 +494,13 @@ const User = () => {
         <ProTable
           columns={column}
           rowKey={(record) => record.id}
-          expandable={{
-            expandedRowRender,
-          }}
+          // expandable={{
+          //   expandedRowRender,
+          // }}
           request={async (params, sort, filter) => {
             const data = [];
-            const arr = await getCustomers(params.fullname ?? '');
+
+            const arr = await GetBookingList('', params.current, params.pageSize);
             setTotal(arr.length);
             return {
               data: arr.map((item, index) => ({ ...item, number: index + 1 })),
@@ -529,7 +514,7 @@ const User = () => {
             pageSize: 10,
             showSizeChanger: true,
             total: total,
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} khách hàng`,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`,
           }}
           search={{
             labelWidth: 'auto',

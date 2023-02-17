@@ -112,8 +112,9 @@ export default defineConfig({
     },
     {
       path: '/users',
-      name: 'Người dùng',
-      icon: 'user',
+      name: 'Đơn hàng',
+      // icon đơn hàng
+      icon: 'shopping-cart',
       access: 'admin',
       component: './users/customers',
     },

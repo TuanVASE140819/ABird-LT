@@ -72,13 +72,16 @@ const Login = () => {
         if (res?.jwttoken) {
           const defaultLoginSuccessMessage = intl.formatMessage({
             id: 'pages.login.success',
-            defaultMessage: 'Đăng nhập thành công!uccess!',
+            defaultMessage: 'Đăng nhập thành công!',
           });
           setAppToken(res.jwttoken);
           message.success(defaultLoginSuccessMessage);
           await fetchUserInfo();
           if (!history) return;
           const { query } = history.location;
+          // lấy accountid từ localstorage
+          const accountId = localStorage.getItem('accountId');
+
           const { redirect } = query;
           history.push(redirect || '/');
           return;

@@ -40,17 +40,6 @@ const request = extend({
   errorHandler,
 });
 
-// request.interceptors.request.use((url, options) => {
-//   const jwtToken = getAppToken();
-//   Object.assign(options.headers, {
-//     Authorization: `Bearer ${jwtToken}`,
-//   });
-//   return {
-//     url,
-//     options,
-//   };
-// });
-
 request.interceptors.response.use((response, option) => {
   const { status, url } = response;
   const { method } = option;

@@ -1,23 +1,41 @@
 import request from '@/utils/requestServer';
 
-export const getCustomers = async (params) => {
-  return await request
-    .get(`/api/Customers/Getallcustomer${params ? `?search=${params}` : ''}`)
-    .then((response) => {
-      console.log('response getUsers', response);
+// export const getCustomers = async (params) => {
+//   return await request
+//     .get(`/api/Customers/Getallcustomer${params ? `?search=${params}` : ''}`)
+//     .then((response) => {
+//       console.log('response getUsers', response);
 
+//       return response.data;
+//     })
+//     .catch((error) => {
+//       console.log('errorGetUsers', error);
+//     });
+// };
+
+// https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?search=1&accountid=3&pagesize=10&pagenumber=1
+
+export const GetBookingList = async (params) => {
+  const accountId = localStorage.getItem('accountId');
+  return await request
+    .get(
+      `/api/Bookings/GetBookingList?search=${params}&accountid=${accountId}&pagesize=10&pagenumber=1`,
+    )
+    .then((response) => {
       return response.data;
     })
     .catch((error) => {
       console.log('errorGetUsers', error);
     });
 };
+
 export const editCustomer = (body) => {
   return request.put('api/Customers/update', { data: body });
 };
 export const login = async (body) => {
   return await request.post('/api/v1/Accounts/LoginByHost', {
     data: body,
+    accountid: 1,
   });
 };
 export const getCurrentUser = async () => {

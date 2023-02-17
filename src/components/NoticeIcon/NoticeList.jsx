@@ -87,24 +87,6 @@ const NoticeList = ({
                       </div>
                     )}
                   </div>
-                  // <div>
-                  //   {/* cắt chuỗi mô tả không hiện thị Chở xử lý trở đi */}
-                  //   <div className={styles.description}>
-                  //     {item.description.length > 50
-                  //       ? item.description.slice(0, 40) + '...'
-                  //       : item.description}
-                  //   </div>
-
-                  //   <div className={styles.description}>
-                  //     Mã giao dịch: {item.description.slice(-8)}
-                  //   </div>
-                  //   <div className={styles.datetime}>
-                  //     {moment(item.dateCreate).locale('vi').fromNow()}
-                  //   </div>
-                  //   <div className={styles.datetime}>
-                  //     {item.status === 'notseen' ? 'Chưa xem' : 'Đã xem'}
-                  //   </div>
-                  // </div>
                 }
               />
             </List.Item>

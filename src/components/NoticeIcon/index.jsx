@@ -28,11 +28,7 @@ const NoticeIconView = () => {
 
     getNotifyList();
 
-    const interval = setInterval(() => {
-      getNotifyList();
-    }, 10000);
-
-    return () => clearInterval(interval);
+    return () => clearInterval();
   }, []);
 
   const depositList = notifyList.filter((item) => item.type === 'deposit');
