@@ -92,6 +92,7 @@ const Login = () => {
           });
           message.error(defaultLoginFailureMessage);
         }
+        localStorage.setItem('accountId', res.accountId);
       }
     } catch (error) {
       if (error.code === 'auth/wrong-password') {

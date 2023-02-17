@@ -15,8 +15,9 @@ import request from '@/utils/requestServer';
 
 // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?search=1&accountid=3&pagesize=10&pagenumber=1
 
-export const GetBookingList = async (params) => {
+export const GetBookingList = async (params, response) => {
   const accountId = localStorage.getItem('accountId');
+
   return await request
     .get(
       `/api/Bookings/GetBookingList?search=${params}&accountid=${accountId}&pagesize=10&pagenumber=1`,
