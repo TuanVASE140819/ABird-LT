@@ -110,7 +110,6 @@ const columns = [
     },
   },
   {
-    // title: 'Hành động',
     valueType: 'option',
     render: (dom, entity) => {
       return (

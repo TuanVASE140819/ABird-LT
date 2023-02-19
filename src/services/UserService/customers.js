@@ -57,17 +57,34 @@ export const getAnCustomer = async (userId) => {
 export const getSpecializationTypes = async (params) => {
   return await request.get('/api/SpecializationTypes/getallspecype').then((res) => {
     console.log('response getSpecializationTypes', res);
-    return res.data;
+    return res.data[0];
   });
 };
+export const getSevices = async (params) => {
+  const accountId = localStorage.getItem('accountId');
+
+  return await request
+    // https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=3&search=1&pagesize=10&pagenumber=1
+    .get(`/api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log('errorGetUsers', error);
+    });
+};
+
 // https://psycteamv2.azurewebsites.net/api/SpecializationTypes/update/5
 export const editSpecializationTypes = (body) => {
   return request.put('api/SpecializationTypes/update', { data: body });
 };
-//https://psycteamv2.azurewebsites.net/api/SpecializationTypes/4
-export const getASpecializationTypes = (id) => {
-  return request.get(`/api/SpecializationTypes/${id}`);
+
+export const createService = (body) => {
+  return request.post('api/Services/CreateService', {
+    data: body,
+  });
 };
+
 //https://psycteamv2.azurewebsites.net/api/SpecializationTypes/create
 export const createSpecializationTypes = (body) => {
   return request.post('api/SpecializationTypes/create', { data: body });

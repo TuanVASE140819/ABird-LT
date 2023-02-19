@@ -15,6 +15,8 @@ import {
   createSpecializationTypes,
 } from '@/services/UserService/customers';
 // import {getSpecializationTypes} from '@/services/SpecializationService
+
+import { getSevices } from '@/services/ServiceService';
 import { useModel } from 'umi';
 import { uploadFile } from '@/utils/uploadFile';
 import Profile from './component/Profile';
@@ -315,7 +317,7 @@ const User = () => {
           // }}
           request={async (params, sort, filter) => {
             const data = [];
-            const arr = await getSpecializationTypes(params.fullname ?? '');
+            const arr = await getSevices(params);
             setTotal(arr.length);
             return {
               data: arr.map((item, index) => ({ ...item, number: index + 1 })),
@@ -345,7 +347,7 @@ const User = () => {
               icon={<PlusOutlined />}
               onClick={() => handleModal()}
             >
-              Thêm chuyên môn
+              Thêm dịch vụ
             </Button>,
           ]}
         />
