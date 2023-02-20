@@ -10,7 +10,7 @@ export default {
   'layout.user.link.help': 'Trợ giúp',
   'layout.user.link.privacy': 'Riêng tư',
   'layout.user.link.terms': 'Điều khoản',
-  'app.copyright.produced': 'Produced by PSYC TEAM',
+  'app.copyright.produced': 'Produced by ...',
   'app.preview.down.block': 'Tải về toàn bộ code của trang này',
   'app.welcome.link.fetch-blocks': 'Tải về toàn bộ code của trang này',
   'app.welcome.link.block-list': 'Tải về toàn bộ code của trang này',

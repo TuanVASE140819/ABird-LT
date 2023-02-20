@@ -127,7 +127,7 @@ const columns = [
               });
             }}
           >
-            Chap nhan
+            <Button type="primary">Chấp nhận</Button>
           </a>,
           <a
             key="delete"
@@ -145,7 +145,7 @@ const columns = [
               });
             }}
           >
-            Tu choi
+            <Button type="danger">Từ chối</Button>
           </a>,
         ];
       } else {
@@ -155,7 +155,7 @@ const columns = [
   },
   {
     // xem thêm
-    title: 'Xem thêm',
+    title: '',
     valueType: 'option',
     render: (text, record, _, action) => {
       return [
@@ -166,17 +166,6 @@ const columns = [
               // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=1
               title: 'Chi tiết đặt chỗ',
               content: (
-                // "dateBooking": "2023-02-16T00:00:00",
-                // "customerName": "Tester",
-                // "birdOfCustomer": "Chim Sáo",
-                // "imageOfBird": null,
-                // "typeOfBird": "Chim Sáo",
-                // "infoOfBird": "Chim sáo đẹp",
-                // "dateStart": "2023-02-16T00:00:00",
-                // "dateEnd": "2023-02-20T00:00:00",
-                // "service": [],
-                // "status": "accepted"
-                
                 <Descriptions column={1}>
                   <Descriptions.Item label="Ngày đặt chỗ">
                     {dayjs(record.dateBooking).format('DD/MM/YYYY')}
@@ -184,14 +173,13 @@ const columns = [
                   <Descriptions.Item label="Tên khách hàng">
                     {record.customerName}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Tên chim">
-                    {record.birdOfCustomer}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Loại chim">
-                    {record.typeOfBird}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Thông tin về chim">
-                    {record.infoOfBird}
+                  <Descriptions.Item label="Tên chim">{record.birdOfCustomer}</Descriptions.Item>
+                  <Descriptions.Item label="Loại chim">...</Descriptions.Item>
+                  <Descriptions.Item
+                    label="Thông tin về chim"
+                    // xuống hàng
+                  >
+                    Chim rừng đẹp
                   </Descriptions.Item>
                   <Descriptions.Item label="Ngày bắt đầu">
                     {dayjs(record.dateStart).format('DD/MM/YYYY')}
@@ -203,14 +191,12 @@ const columns = [
                     {record.status === 'waiting' ? (
                       <Tag color="warning">Đang chờ</Tag>
                     ) : record.status === 'accepted' ? (
-
                       <Tag color="success">Đã chấp nhận</Tag>
                     ) : (
                       <Tag color="error">Đã từ chối</Tag>
                     )}
                   </Descriptions.Item>
                 </Descriptions>
-                
               ),
               okText: 'Xác nhận',
               cancelText: 'Hủy',
