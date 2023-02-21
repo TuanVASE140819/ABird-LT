@@ -250,7 +250,6 @@ const User = () => {
   const handleModal = () => {
     setShowModel(!showModal);
     setFlagEditForm('');
-    //vì hàm này ko liên quan đến edit user nên phải set lại user record = null
     setUserRecord(null);
   };
 
@@ -327,7 +326,6 @@ const User = () => {
           onReset={true}
           actionRef={actionRef}
           pagination={{
-            //mặc định là 10
             pageSize: 10,
             showSizeChanger: true,
             total: total,
@@ -381,29 +379,6 @@ const User = () => {
           handleOpenModalPicker={handleOpenModalPicker}
         />
       )}
-
-      <Modal
-        visible={modalPicker}
-        onCancel={() => handleCancelModalPicker()}
-        closable={false}
-        title={false}
-        width="1300px"
-        footer={[
-          <Button key="cancelModelView" type="default" onClick={() => handleCancelModalPicker()}>
-            Close
-          </Button>,
-        ]}
-      >
-        <MapPicker
-          defaultLocation={defaultLocation}
-          zoom={zoom}
-          mapTypeId="roadmap"
-          style={{ height: '700px' }}
-          onChangeLocation={handleChangeLocation}
-          onChangeZoom={handleChangeZoom}
-          apiKey="AIzaSyD07E1VvpsN_0FvsmKAj4nK9GnLq-9jtj8"
-        />
-      </Modal>
     </>
   );
 };

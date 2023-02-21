@@ -94,3 +94,14 @@ export const createSpecializationTypes = (body) => {
 export const banUnbanCustomer = (id) => {
   return request.delete(`/api/Customers/${id}`);
 };
+
+export const GetBookingDetail = async (params) => {
+  return await request
+    .get(`/api/Bookings/GetBookingDetail?id=${params.id}`)
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      return error;
+    });
+};

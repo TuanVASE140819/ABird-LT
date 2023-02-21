@@ -1,270 +1,326 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Descriptions, Dropdown, Menu, message, Modal, Space, Tag } from 'antd';
+import { Button, Descriptions, Dropdown, Menu, message, Modal, Space, Tag, Select } from 'antd';
 import { useRef } from 'react';
 import request from 'umi-request';
 import dayjs from 'dayjs';
 import { MoreOutlined } from '@ant-design/icons';
+import axios from 'axios';
+const { Option } = Select;
+const accountId = localStorage.getItem('accountId');
 
-const columns = [
-  // {
-  //   "id": 1,
-  //   "dateBooking": "2023-02-16T00:00:00",
-  //   "customerName": "Tester",
-  //   "birdOfCustomer": "Chim Sáo",
-  //   "dateStart": "2023-02-16T00:00:00",
-  //   "dateEnd": "2023-02-20T00:00:00",
-  //   "status": "waiting"
-  // },
-  {
-    title: 'STT',
-    dataIndex: 'index',
-    valueType: 'index',
-    width: 48,
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    valueType: 'text',
-    search: false,
-    sorter: (a, b) => a.customerName - b.customerName,
-    tip: 'Tên khách hàng',
-    formItemProps: {
-      rules: [
-        {
-          required: false,
-          message: 'Tên khách hàng là bắt buộc',
-        },
-      ],
+const Customers = () => {
+  const [defaultValue, setDefaultValue] = useState([]);
+  const columns = [
+    {
+      title: 'STT',
+      dataIndex: 'index',
+      valueType: 'index',
+      width: 48,
     },
-  },
-  {
-    title: 'Tên chim',
-    dataIndex: 'birdOfCustomer',
-    valueType: 'text',
-    search: false,
+    {
+      title: 'Tên khách hàng',
+      dataIndex: 'customerName',
+      valueType: 'text',
+      search: false,
+      sorter: (a, b) => a.customerName - b.customerName,
+      tip: 'Tên khách hàng',
+      formItemProps: {
+        rules: [
+          {
+            required: false,
+            message: 'Tên khách hàng là bắt buộc',
+          },
+        ],
+      },
+    },
+    {
+      title: 'Tên chim',
+      dataIndex: 'birdOfCustomer',
+      valueType: 'text',
+      search: false,
 
-    sorter: (a, b) => a.birdOfCustomer - b.birdOfCustomer,
-    tip: 'Tên chim',
-    formItemProps: {
-      rules: [
-        {
-          required: false,
-          message: 'Tên chim là bắt buộc',
-        },
-      ],
+      sorter: (a, b) => a.birdOfCustomer - b.birdOfCustomer,
+      tip: 'Tên chim',
+      formItemProps: {
+        rules: [
+          {
+            required: false,
+            message: 'Tên chim là bắt buộc',
+          },
+        ],
+      },
     },
-  },
-  {
-    title: 'Ngày bắt đầu',
-    dataIndex: 'dateStart',
-    valueType: 'text',
-    search: false,
-    sorter: (a, b) => a.dateStart - b.dateStart,
-    render: (_, record) => {
-      const dateStart = dayjs(record.dateStart).format('DD/MM/YYYY');
-      return (
-        <Space>
-          <Tag color="geekblue">{dateStart}</Tag>
-        </Space>
-      );
+    {
+      title: 'Ngày bắt đầu',
+      dataIndex: 'dateStart',
+      valueType: 'text',
+      search: false,
+      sorter: (a, b) => a.dateStart - b.dateStart,
+      render: (_, record) => {
+        const dateStart = dayjs(record.dateStart).format('DD/MM/YYYY');
+        return (
+          <Space>
+            <Tag color="geekblue">{dateStart}</Tag>
+          </Space>
+        );
+      },
     },
-  },
-  {
-    title: 'Ngày kết thúc',
-    dataIndex: 'dateEnd',
+    {
+      title: 'Ngày kết thúc',
+      dataIndex: 'dateEnd',
 
-    valueType: 'text',
-    search: false,
+      valueType: 'text',
+      search: false,
 
-    sorter: (a, b) => a.dateEnd - b.dateEnd,
-    tip: 'Ngày kết thúc',
-    render: (_, record) => {
-      const dateEnd = dayjs(record.dateEnd).format('DD/MM/YYYY');
-      return (
-        <Space>
-          <Tag color="geekblue">{dateEnd}</Tag>
-        </Space>
-      );
+      sorter: (a, b) => a.dateEnd - b.dateEnd,
+      tip: 'Ngày kết thúc',
+      render: (_, record) => {
+        const dateEnd = dayjs(record.dateEnd).format('DD/MM/YYYY');
+        return (
+          <Space>
+            <Tag color="geekblue">{dateEnd}</Tag>
+          </Space>
+        );
+      },
     },
-  },
-  {
-    title: 'Trạng thái',
-    dataIndex: 'status',
-    valueType: 'text',
-    search: false,
-    sorter: (a, b) => a.status - b.status,
-    tip: 'Trạng thái',
-    render: (text, record) => {
-      if (record.status === 'waiting') {
-        return <Tag color="warning">Đang chờ</Tag>;
-      } else if (record.status === 'accepted') {
-        return <Tag color="success">Đã chấp nhận</Tag>;
-      } else {
-        return <Tag color="error">Đã từ chối</Tag>;
-      }
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      valueType: 'text',
+      search: false,
+      sorter: (a, b) => a.status - b.status,
+      tip: 'Trạng thái',
+      render: (text, record) => {
+        if (record.status === 'waiting') {
+          return <Tag color="warning">Đang chờ</Tag>;
+        } else if (record.status === 'accepted') {
+          return <Tag color="success">Đã chấp nhận</Tag>;
+        } else {
+          return <Tag color="error">Đã từ chối</Tag>;
+        }
+      },
     },
-  },
-  {
-    title: 'Thao tác',
-    valueType: 'option',
-    render: (text, record, _, action) => {
-      if (record.status === 'waiting') {
+    {
+      title: 'Thao tác',
+      valueType: 'option',
+      render: (text, record, _, action) => {
+        if (record.status === 'waiting') {
+          return [
+            <a
+              key="editable"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận chấp nhận',
+                  content: 'Bạn có chắc chắn muốn chấp nhận không?',
+                  okText: 'Xác nhận',
+                  cancelText: 'Hủy',
+                  onOk: async () => {
+                    await acceptBooking(record.id);
+                    message.success('Chấp nhận thành công');
+                    action?.reload();
+                  },
+                });
+              }}
+            >
+              <Button type="primary">Chấp nhận</Button>
+            </a>,
+            <a
+              key="delete"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận từ chối',
+                  content: 'Bạn có chắc chắn muốn từ chối không?',
+                  okText: 'Xác nhận',
+                  cancelText: 'Hủy',
+                  onOk: async () => {
+                    await rejectBooking(record.id);
+                    message.success('Từ chối thành công');
+                    action?.reload();
+                  },
+                });
+              }}
+            >
+              <Button type="danger">Từ chối</Button>
+            </a>,
+          ];
+        } else {
+          return [];
+        }
+      },
+    },
+    {
+      // nút dịch vị thêm sẽ hiện thi modal để thêm dịch vụ
+      title: 'Dịch vụ',
+      valueType: 'option',
+      render: (text, record, _, action) => {
         return [
           <a
             key="editable"
-            onClick={() => {
-              Modal.confirm({
-                title: 'Xác nhận chấp nhận',
-                content: 'Bạn có chắc chắn muốn chấp nhận không?',
-                okText: 'Xác nhận',
-                cancelText: 'Hủy',
-                onOk: async () => {
-                  await acceptBooking(record.id);
-                  message.success('Chấp nhận thành công');
-                  action?.reload();
-                },
-              });
+            onClick={async () => {
+              try {
+                const response = await axios.get(
+                  `https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`,
+                );
+                const respbooking = await axios.get(
+                  `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${record.id}`,
+                );
+                const booking = respbooking.data;
+
+                const databooked = booking.data[0].service.map((service) => service.id);
+                console.log(defaultValue);
+                const services = response.data;
+
+                Modal.info({
+                  title: 'Dịch vụ',
+                  content: (
+                    <Select
+                      mode="multiple"
+                      style={{
+                        width: '100%',
+                      }}
+                      placeholder="Chọn dịch vụ"
+                      optionLabelProp="label"
+                      defaultValue={databooked}
+                    >
+                      {services.data.map((service) => (
+                        <Option value={service.id} label={service.name}>
+                          <div className="demo-option-label-item">{service.name}</div>
+                        </Option>
+                      ))}
+                    </Select>
+                  ),
+                  onOk: async (value) => {
+                    const data = {
+                      id: record.id,
+                      service: value,
+                    };
+                    try {
+                      const response = await axios.post(
+                        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/UpdateServiceBooking`,
+                        data,
+                        {
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                        },
+                      );
+                      if (response.status === 200) {
+                        message.success('Cập nhật thành công');
+                        action?.reload();
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      message.error('Cập nhật thất bại');
+                    }
+                  },
+                  onCancel() {},
+                });
+              } catch (error) {
+                console.error(error);
+              }
             }}
           >
-            <Button type="primary">Chấp nhận</Button>
-          </a>,
-          <a
-            key="delete"
-            onClick={() => {
-              Modal.confirm({
-                title: 'Xác nhận từ chối',
-                content: 'Bạn có chắc chắn muốn từ chối không?',
-                okText: 'Xác nhận',
-                cancelText: 'Hủy',
-                onOk: async () => {
-                  await rejectBooking(record.id);
-                  message.success('Từ chối thành công');
-                  action?.reload();
-                },
-              });
-            }}
-          >
-            <Button type="danger">Từ chối</Button>
+            <Button type="primary">Thêm dịch vụ</Button>
           </a>,
         ];
-      } else {
-        return [];
-      }
+      },
     },
-  },
-  {
-    // xem thêm
-    title: '',
-    valueType: 'option',
-    render: (text, record, _, action) => {
-      return [
-        <a
-          key="editable"
-          onClick={() => {
-            Modal.confirm({
-              // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=1
-              title: 'Chi tiết đặt chỗ',
-              content: (
-                <Descriptions column={1}>
-                  <Descriptions.Item label="Ngày đặt chỗ">
-                    {dayjs(record.dateBooking).format('DD/MM/YYYY')}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Tên khách hàng">
-                    {record.customerName}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Tên chim">{record.birdOfCustomer}</Descriptions.Item>
-                  <Descriptions.Item label="Loại chim">...</Descriptions.Item>
-                  <Descriptions.Item
-                    label="Thông tin về chim"
-                    // xuống hàng
-                  >
-                    Chim rừng đẹp
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ngày bắt đầu">
-                    {dayjs(record.dateStart).format('DD/MM/YYYY')}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ngày kết thúc">
-                    {dayjs(record.dateEnd).format('DD/MM/YYYY')}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Trạng thái">
-                    {record.status === 'waiting' ? (
-                      <Tag color="warning">Đang chờ</Tag>
-                    ) : record.status === 'accepted' ? (
-                      <Tag color="success">Đã chấp nhận</Tag>
-                    ) : (
-                      <Tag color="error">Đã từ chối</Tag>
-                    )}
-                  </Descriptions.Item>
-                </Descriptions>
-              ),
-              okText: 'Xác nhận',
-              cancelText: 'Hủy',
-              onOk: async () => {
-                action?.reload();
 
-                // await acceptBooking(record.id);
-                // message.success('Chấp nhận thành công');
-                // action?.reload();
-
-                // await rejectBooking(record.id);
-                // message.success('Từ chối thành công');
-                // action?.reload();
-
-                // await rejectDeposit(record.id);
-                // message.success('Từ chối thành công');
-                // action?.reload();
-
-                // await acceptDeposit(record.id);
-                // message.success('Chấp nhận thành công');
-                // action?.reload();
-
-                // await rejectBooking(record.id);
-                // message.success('Từ chối thành công');
-                // action?.reload();
-
-                // await acceptBooking(record.id);
-                // message.success('Chấp nhận thành công');
-                // action?.reload();
-
-                // await rejectBooking(record.id);
-                // message.success('Từ chối thành công');
-                // action?.reload();
-              },
-            });
-          }}
-        >
-          <MoreOutlined />
-        </a>,
-      ];
-    },
-  },
-];
-
-// https://psycteamv2.azurewebsites.net/api/Deposits/acceptdeposit?id=1
-const acceptBooking = async (id) => {
-  const res = await request(
-    // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=12
-    `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=${id}`,
     {
-      method: 'PUT',
-    },
-  );
-  return res;
-};
+      valueType: 'option',
+      render: (text, record, _, action) => {
+        return [
+          <a
+            key="editable"
+            onClick={async () => {
+              try {
+                const response = await fetch(
+                  `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${record.id}`,
+                );
 
-//https://psycteamv2.azurewebsites.net/api/Deposits/rejectdeposit?id=1
-const rejectDeposit = async (id) => {
-  const res = await request(
-    `https://psycteamv2.azurewebsites.net/api/Deposits/rejectdeposit?id=${id}`,
-    {
-      method: 'PUT',
-    },
-  );
-  return res;
-};
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                // console.log(data.data[0].service);
+                Modal.info({
+                  title: 'Chi tiết đặt chỗ',
+                  content: (
+                    // hiện thị chi tiết đặt chỗ theo đúng id
+                    <div>
+                      <p>
+                        <b>Tên khách hàng: </b>
+                        {data.data[0].customerName}
+                      </p>
+                      <p>
+                        <b>Tên chim: </b>
+                        {data.data[0].birdOfCustomer}
+                      </p>
+                      <p>
+                        <b>Ngày bắt đầu: </b>
+                        {dayjs(data.data[0].dateStart).format('DD/MM/YYYY')}
+                      </p>
+                      <p>
+                        <b>Ngày kết thúc: </b>
+                        {dayjs(data.data[0].dateEnd).format('DD/MM/YYYY')}
+                      </p>
+                      <p>
+                        <b>Trạng thái: </b>
 
-export default () => {
+                        {data.data[0].status === 'waiting' ? (
+                          <Tag color="warning">Đang chờ</Tag>
+                        ) : data.data[0].status === 'accepted' ? (
+                          <Tag color="success">Đã chấp nhận</Tag>
+                        ) : (
+                          <Tag color="error">Đã từ chối</Tag>
+                        )}
+                      </p>
+                      <p>
+                        <b>Dịch vụ: </b>
+                        {data.data[0].service.map((item) => (
+                          <Tag color="geekblue">{item.name}</Tag>
+                        ))}
+                        ,
+                      </p>
+                    </div>
+                  ),
+                });
+              } catch (error) {
+                console.error('There was an error!', error);
+              }
+            }}
+          >
+            <MoreOutlined />
+          </a>,
+        ];
+      },
+    },
+  ];
+
+  // https://psycteamv2.azurewebsites.net/api/Deposits/acceptdeposit?id=1
+  const acceptBooking = async (id) => {
+    const res = await request(
+      // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=12
+      `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=${id}`,
+      {
+        method: 'PUT',
+      },
+    );
+    return res;
+  };
+
+  //https://psycteamv2.azurewebsites.net/api/Deposits/rejectdeposit?id=1
+  const rejectDeposit = async (id) => {
+    const res = await request(
+      `https://psycteamv2.azurewebsites.net/api/Deposits/rejectdeposit?id=${id}`,
+      {
+        method: 'PUT',
+      },
+    );
+    return res;
+  };
+
   const actionRef = useRef();
   //paging
   const [page, setPage] = React.useState(1);
@@ -279,10 +335,10 @@ export default () => {
       cardBordered
       request={async (params = {}, sort, filter) => {
         console.log(sort, filter);
-        const id = localStorage.getItem('accountId');
+
         return request(
           // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?accountid=3&pagesize=10&pagenumber=1
-          `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?accountid=${id}&pagesize=${params.pageSize}&pagenumber=${params.current}`,
+          `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?accountid=${accountId}&pagesize=${params.pageSize}&pagenumber=${params.current}`,
           {
             method: 'GET',
             params: {
@@ -345,3 +401,5 @@ export default () => {
     />
   );
 };
+
+export default React.memo(Customers);
