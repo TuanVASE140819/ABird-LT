@@ -80,7 +80,9 @@ const Login = () => {
           if (!history) return;
           const { query } = history.location;
           // lấy accountid từ localstorage
-          const accountId = localStorage.getItem('accountId');
+          localStorage.setItem('accountId', res.accountId);
+
+          // const accountId = localStorage.getItem('accountId');
 
           const { redirect } = query;
           history.push(redirect || '/');
