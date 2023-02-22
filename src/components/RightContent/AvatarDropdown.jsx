@@ -88,7 +88,7 @@ const AvatarDropdown = ({ menu }) => {
           }
           alt="avatar"
         />
-        <span className={`${styles.name} anticon`}>Admin PSYC</span>
+        <span className={`${styles.name} anticon`}>Lưu Trú 1</span>
       </span>
     </HeaderDropdown>
   );

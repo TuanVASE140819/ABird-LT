@@ -125,103 +125,103 @@ export default defineConfig({
       access: 'admin',
       component: './service',
     },
-    {
-      path: '/astrology',
-      name: 'Chiêm tinh học',
-      icon: 'snippets',
-      access: 'admin',
-      routes: [
-        {
-          path: '/astrology',
-          redirect: '/astrology/zodiac',
-        },
-        {
-          path: '/astrology/zodiac',
-          name: 'Cung hoàng đạo',
-          access: 'admin',
-          component: './astrology/zodiac',
-        },
-        {
-          path: '/astrology/house',
-          name: 'Nhà',
-          access: 'admin',
-          component: './astrology/house',
-        },
-
-        {
-          path: '/astrology/planet',
-          name: 'Hành tinh',
-          access: 'admin',
-          component: './astrology/planet',
-        },
-        {
-          path: '/astrology/planet/:planetId',
-          name: 'Chi tiết hành tinh',
-          hideInMenu: true,
-          access: 'admin',
-          component: './astrology/planet/[planetId]',
-        },
-        {
-          path: '/astrology/zodiac/:zodiacId',
-          name: 'Detail Zodiac',
-          hideInMenu: true,
-          access: 'admin',
-          component: './astrology/zodiac/[zodiacId]',
-        },
-        {
-          component: './404',
-        },
-      ],
-    },
-    {
-      path: '/transaction',
-      name: 'Giao dịch',
-      icon: 'dollar',
-      access: 'admin',
-      routes: [
-        {
-          path: '/transaction',
-          redirect: '/transaction/deposits',
-        },
-        {
-          path: '/transaction/deposits',
-          name: 'Nạp tiền',
-          access: 'admin',
-          component: './transaction/deposits',
-        },
-        {
-          path: '/transaction/withdraws',
-          name: 'Rút tiền',
-          access: 'admin',
-          component: './transaction/withdraws',
-        },
-      ],
-    },
     // {
-    //   path: '/excel',
-    //   name: 'Excel',
-    //   icon: 'file-excel',
+    //   path: '/astrology',
+    //   name: 'Chiêm tinh học',
+    //   icon: 'snippets',
     //   access: 'admin',
     //   routes: [
     //     {
-    //       path: '/excel',
-    //       redirect: '/excel/dailyHoroscopes',
+    //       path: '/astrology',
+    //       redirect: '/astrology/zodiac',
     //     },
     //     {
-    //       path: '/excel/dailyHoroscopes',
-    //       name: 'Tử vi hàng ngày',
+    //       path: '/astrology/zodiac',
+    //       name: 'Cung hoàng đạo',
     //       access: 'admin',
-    //       component: './excel/dailyHoroscopes',
+    //       component: './astrology/zodiac',
+    //     },
+    //     {
+    //       path: '/astrology/house',
+    //       name: 'Nhà',
+    //       access: 'admin',
+    //       component: './astrology/house',
+    //     },
+
+    //     {
+    //       path: '/astrology/planet',
+    //       name: 'Hành tinh',
+    //       access: 'admin',
+    //       component: './astrology/planet',
+    //     },
+    //     {
+    //       path: '/astrology/planet/:planetId',
+    //       name: 'Chi tiết hành tinh',
+    //       hideInMenu: true,
+    //       access: 'admin',
+    //       component: './astrology/planet/[planetId]',
+    //     },
+    //     {
+    //       path: '/astrology/zodiac/:zodiacId',
+    //       name: 'Detail Zodiac',
+    //       hideInMenu: true,
+    //       access: 'admin',
+    //       component: './astrology/zodiac/[zodiacId]',
+    //     },
+    //     {
+    //       component: './404',
     //     },
     //   ],
     // },
-    {
-      path: '/system-handler',
-      name: 'system-handler',
-      icon: 'setting',
-      access: 'admin',
-      component: './system-handler',
-    },
+    // {
+    //   path: '/transaction',
+    //   name: 'Giao dịch',
+    //   icon: 'dollar',
+    //   access: 'admin',
+    //   routes: [
+    //     {
+    //       path: '/transaction',
+    //       redirect: '/transaction/deposits',
+    //     },
+    //     {
+    //       path: '/transaction/deposits',
+    //       name: 'Nạp tiền',
+    //       access: 'admin',
+    //       component: './transaction/deposits',
+    //     },
+    //     {
+    //       path: '/transaction/withdraws',
+    //       name: 'Rút tiền',
+    //       access: 'admin',
+    //       component: './transaction/withdraws',
+    //     },
+    //   ],
+    // },
+    // // {
+    // //   path: '/excel',
+    // //   name: 'Excel',
+    // //   icon: 'file-excel',
+    // //   access: 'admin',
+    // //   routes: [
+    // //     {
+    // //       path: '/excel',
+    // //       redirect: '/excel/dailyHoroscopes',
+    // //     },
+    // //     {
+    // //       path: '/excel/dailyHoroscopes',
+    // //       name: 'Tử vi hàng ngày',
+    // //       access: 'admin',
+    // //       component: './excel/dailyHoroscopes',
+    // //     },
+    // //   ],
+    // // },
+    // {
+    //   path: '/system-handler',
+    //   name: 'system-handler',
+    //   icon: 'setting',
+    //   access: 'admin',
+    //   component: './system-handler',
+    // },
     {
       path: '/',
       redirect: '/dashboard',
