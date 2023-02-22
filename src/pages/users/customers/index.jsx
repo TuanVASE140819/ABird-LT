@@ -150,7 +150,6 @@ const Customers = () => {
       },
     },
     {
-      // nút dịch vị thêm sẽ hiện thi modal để thêm dịch vụ
       title: 'Dịch vụ',
       valueType: 'option',
       render: (text, record, _, action) => {
@@ -168,7 +167,7 @@ const Customers = () => {
                 const booking = respbooking.data;
 
                 const databooked = booking.data[0].service.map((service) => service.id);
-                console.log(defaultValue);
+
                 const services = response.data;
 
                 Modal.info({
@@ -190,11 +189,15 @@ const Customers = () => {
                       ))}
                     </Select>
                   ),
-                  onOk: async (value) => {
+                  onOk: async (values) => {
                     const data = {
-                      id: record.id,
-                      service: value,
+                      bookingId: record.id,
+                      serId: booking.data[0].service.map((service) => service.id),
                     };
+                    console.log(
+                      booking.data[0].service.map((service) => service.id),
+                      values,
+                    );
                     try {
                       const response = await axios.post(
                         `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/UpdateServiceBooking`,
@@ -226,7 +229,6 @@ const Customers = () => {
         ];
       },
     },
-
     {
       valueType: 'option',
       render: (text, record, _, action) => {
