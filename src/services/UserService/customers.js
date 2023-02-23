@@ -67,6 +67,7 @@ export const getSevices = async (params) => {
     // https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=3&search=1&pagesize=10&pagenumber=1
     .get(`/api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`)
     .then((response) => {
+      console.log('response getUsers', response);
       return response.data;
     })
     .catch((error) => {
