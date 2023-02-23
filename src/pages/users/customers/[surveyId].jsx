@@ -5,14 +5,9 @@ import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import { PlusOutlined } from '@ant-design/icons';
 import ModalForm from '@/components/ModalForm';
+import axios from 'axios';
 // import { getAnCustomer, getCustomers, editCustomer } from '@/services/UserService/customers';
-import {
-  getQuestionBySurveyId,
-  getQuestion,
-  updateQuestion,
-  addQuestion,
-  deleteQuestion,
-} from '@/services/SurveyService/survey';
+import { updateQuestion, addQuestion, deleteQuestion } from '@/services/SurveyService/survey';
 import { useModel } from 'umi';
 import { uploadFile } from '@/utils/uploadFile';
 import Profile from '../../survey/component/Profile';
@@ -28,6 +23,7 @@ const User = (props) => {
   } = props;
   // modal xác nhân xóa
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [booking, setBooking] = useState(null);
   const showModalDelete = () => {
     setIsModalOpen(true);
   };
@@ -353,9 +349,21 @@ const User = (props) => {
     setShowModel(!showModal);
   };
 
-  const expandedRowRender = (record) => {
-    return <Profile user={record} />;
-  };
+  React.useEffect(() => {
+    const bookingId = localStorage.getItem('bookingId');
+    axios
+      .get(
+        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${bookingId}`,
+      )
+      .then((response) => {
+        setBooking(response.data.data[0]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+  console.log(booking);
+
   return (
     <>
       <PageContainer>
