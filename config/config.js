@@ -74,50 +74,43 @@ export default defineConfig({
       hideInMenu: true,
       component: './notipage',
     },
-    // {
-    //   path: '/survey',
-    //   name: 'Loại khảo sát',
-    //   icon: 'form',
-    //   access: 'admin',
-    //   routes: [
-    //     {
-    //       path: '/survey',
-    //       name: 'Loại Khảo Sát',
-    //       icon: 'form',
-    //       access: 'admin',
-    //       hideInMenu: true,
-    //       component: './survey',
-    //     },
-    //     {
-    //       path: '/survey/:zodiacId',
-    //       name: 'Khảo sát',
-    //       hideInMenu: true,
-    //       access: 'admin',
-    //       component: './survey/[zodiacId]',
-    //     },
-    //     {
-    //       path: '/survey/:zodiacId/:surveyId',
-    //       name: 'Câu hỏi',
-    //       hideInMenu: true,
-    //       access: 'admin',
-    //       component: './survey/[surveyId]',
-    //     },
-    //   ],
-    // },
+    {
+      path: '/users',
+      name: 'Đơn hàng',
+      icon: 'shopping-cart',
+      access: 'admin',
+      routes: [
+        {
+          path: '/users',
+          name: 'Đơn hàng',
+          icon: 'shopping-cart',
+          access: 'admin',
+          hideInMenu: true,
+          component: './users/customers',
+        },
+        {
+          path: '/users/:surveyId',
+          name: 'Chi tiết đơn hàng',
+          hideInMenu: true,
+          access: 'admin',
+          component: './users/customers/[surveyId]',
+        },
+      ],
+    },
     {
       path: '/revenue',
       name: 'Doanh thu',
       icon: 'dollar',
       component: './revenue',
     },
-    {
-      path: '/users',
-      name: 'Đơn hàng',
-      // icon đơn hàng
-      icon: 'shopping-cart',
-      access: 'admin',
-      component: './users/customers',
-    },
+    // {
+    //   path: '/users',
+    //   name: 'Đơn hàng',
+    //   // icon đơn hàng
+    //   icon: 'shopping-cart',
+    //   access: 'admin',
+    //   component: './users/customers',
+    // },
     {
       path: '/service',
       name: 'Dịch vụ',

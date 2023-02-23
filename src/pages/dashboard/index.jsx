@@ -6,7 +6,6 @@ import { ProCard } from '@ant-design/pro-components';
 import { Card } from 'antd';
 import { SyncOutlined, UserOutlined } from '@ant-design/icons';
 const { Meta } = Card;
-import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);

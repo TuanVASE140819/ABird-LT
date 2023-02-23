@@ -9,7 +9,12 @@ export const getSurveyTypeList = (body) => {
 ///api/SurveyTypes/{id}
 
 export const getASurveyType = async (zodiacId) => {
-  return await request.get(`api/SurveyTypes/${zodiacId}`).then((res) => {
+  // return await request.get(`api/SurveyTypes/${zodiacId}`).then((res) => {
+  //   console.log('A');
+  //   return res;
+  // });
+  // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=1
+  return await request.get(`api/Bookings/GetBookingDetail?id=${zodiacId}`).then((res) => {
     console.log('A');
     return res;
   });
@@ -29,11 +34,13 @@ export const getSurveyBySurveyTypeId = async (surveyTypeId) => {
 ///api/Questions/getquestionbysurveyid
 export const getQuestionBySurveyId = async (surveyId) => {
   return await request
-    .get(`api/Questions/getquestionbysurveyid?surveyid=${surveyId}`)
+    // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=1
+    .get(`api/Bookings/GetBookingDetail?id=${surveyId}`)
     .then((res) => {
       console.log('C');
       return res;
     });
+  z;
 };
 
 export const addQuestion = async (data) => {

@@ -1,5 +1,5 @@
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, message, Modal, Space, Tag } from 'antd';
+import { DeleteOutlined, EditOutlined, EllipsisOutlined } from '@ant-design/icons';
+import { Button, Dropdown, message, Modal, Space, Tag } from 'antd';
 import React, { useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
@@ -15,9 +15,10 @@ import {
 } from '@/services/SurveyService/survey';
 import { useModel } from 'umi';
 import { uploadFile } from '@/utils/uploadFile';
-import Profile from './component/Profile';
+import Profile from '../../survey/component/Profile';
 import dayjs from 'dayjs';
 import MapPicker from 'react-google-map-picker';
+import { ProCard, ProFormText } from '@ant-design/pro-components';
 
 const User = (props) => {
   const {
@@ -358,99 +359,56 @@ const User = (props) => {
   return (
     <>
       <PageContainer>
-        <Button type="primary" style={{ marginBottom: 20 }} onClick={onClickAddQuestion}>
-          Thêm câu hỏi
-        </Button>
-        <ProTable
-          columns={column}
-          rowKey={(record) => record.id}
-          expandable={{
-            expandedRowRender,
-          }}
-          request={async (params, sort, filter) => {
-            const data = [];
-            await getQuestionBySurveyId(surveyId).then((res) => {
-              res?.data?.map((item, index) => {
-                item.number = index + 1;
-                data[index] = item;
-              });
-              setTotal(res?.total);
-            });
+        <ProCard direction="column" ghost gutter={[0, 16]}>
+          <ProCard gutter={16} ghost style={{ height: 500 }}>
+            <ProCard
+              colSpan={16}
+              style={{
+                // paddingBottom
+                height: 610,
+              }}
+            >
+              <h1 style={{ textDecoration: 'underline' }}>CHI TIẾT LƯU TRÚ</h1>
+              <h3>Thời điểm nhận:</h3>
+              <ProFormText width="md" disabled={true} />
+              <h3>Thời điểm trả:</h3>
+              <ProFormText width="md" disabled={true} />
+              <h3>Chế độ ăn:</h3>
+              <ProFormText width="md" disabled={true} />
+              <h3>Vệ sinh:</h3>
+              <ProFormText width="md" disabled={true} />
+              <h3>Dịch vụ khác:</h3>
+              <ProFormText width="md" disabled={true} />
+              {/* button nằm bên phải procard */}
 
-            return {
-              data: data,
-              success: true,
-            };
-          }}
-          onReset={true}
-          actionRef={actionRef}
-          pagination={{
-            //mặc định là 10
-            pageSize: 10,
-            showSizeChanger: true,
-            total: total,
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} câu hỏi`,
-          }}
-          search={{
-            labelWidth: 'auto',
-            searchText: 'Tìm kiếm',
-            submittext: 'Submit',
-            resetText: 'Quay lại',
-          }}
-        />
+              <Button type="primary" onClick={onClickAddQuestion} style={{ float: 'right' }}>
+                Thông tin chim qua từng ngày
+              </Button>
+            </ProCard>
+            <ProCard colSpan={8} style={{ height: 600 }} ghost direction="column">
+              <ProCard>
+                <h1 style={{ textDecoration: 'underline' }}>CHIM</h1>
+                <h3>Loại chim:</h3>
+                <ProFormText width="md" disabled={true} />
+                <h3>Sức khỏe - Bệnh lý:</h3>
+                <ProFormText height={100} disabled={true} />
+              </ProCard>
+              <ProCard
+                //cách trên 18px
+                style={{ marginTop: 18 }}
+              >
+                <h1 style={{ textDecoration: 'underline' }}>KHÁCH HÀNG</h1>
+                <h3>Họ và tên:</h3>
+                <ProFormText width="md" disabled={true} />
+                <h3>SĐT:</h3>
+                <ProFormText width="md" disabled={true} />
+                <h3>Email:</h3>
+                <ProFormText height={100} disabled={true} />
+              </ProCard>
+            </ProCard>
+          </ProCard>
+        </ProCard>
       </PageContainer>
-      {flagEditForm === 'edit' ? (
-        <ModalForm
-          showModal={showModal}
-          titleModal={`Chỉnh sửa câu hỏi`}
-          handleCancelModel={handleCancelModel}
-          formRef={formUserRef}
-          buttonSubmitter={buttonSubmitterUser}
-          handleSubmitForm={handleEditQuestion}
-          formField={formFieldEditUser}
-          customUpload={customUpload}
-          imgLinkFirebase={imgLinkFirebase}
-          handleResetForm={handleResetForm}
-          handleOpenModalPicker={handleOpenModalPicker}
-        />
-      ) : (
-        <ModalForm
-          showModal={showModal}
-          titleModal="Thêm câu hỏi"
-          handleCancelModel={handleCancelModel}
-          formRef={formUserRef}
-          buttonSubmitter={buttonSubmitterUser}
-          handleSubmitForm={handleAddQuestion}
-          formField={formFieldAddUser}
-          customUpload={customUpload}
-          imgLinkFirebase={imgLinkFirebase}
-          handleResetForm={handleResetForm}
-          handleOpenModalPicker={handleOpenModalPicker}
-        />
-      )}
-
-      <Modal
-        visible={modalPicker}
-        onCancel={() => handleCancelModalPicker()}
-        closable={false}
-        title={false}
-        width="1300px"
-        footer={[
-          <Button key="cancelModelView" type="default" onClick={() => handleCancelModalPicker()}>
-            Close
-          </Button>,
-        ]}
-      >
-        <MapPicker
-          defaultLocation={defaultLocation}
-          zoom={zoom}
-          mapTypeId="roadmap"
-          style={{ height: '700px' }}
-          onChangeLocation={handleChangeLocation}
-          onChangeZoom={handleChangeZoom}
-          apiKey="AIzaSyD07E1VvpsN_0FvsmKAj4nK9GnLq-9jtj8"
-        />
-      </Modal>
     </>
   );
 };

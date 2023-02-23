@@ -112,6 +112,43 @@ const User = () => {
       },
     },
     {
+      title: 'Dịch vụ',
+      dataIndex: 'action',
+      search: false,
+      with: '30%',
+      render: (_, record) => {
+        return (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: '50%',
+                marginRight: '8px',
+              }}
+            >
+              <Button
+                key="editConsutanlt"
+                type="#722ED1"
+                size="middle"
+                // icon eye
+
+                block={true}
+                onClick={() => handleEditSpecialist(record)}
+              >
+                +
+              </Button>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       title: 'Thao tác',
       valueType: 'option',
       render: (text, record, _, action) => {
@@ -143,40 +180,19 @@ const User = () => {
       },
     },
     {
-      title: 'Dich vu',
-      dataIndex: 'action',
-      search: false,
-      with: '30%',
-      render: (_, record) => {
-        return (
-          <div
-            style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
+      title: 'Xem thêm',
+      valueType: 'option',
+      render: (text, record, _, action) => {
+        return [
+          <a
+            key="editable"
+            onClick={() => {
+              history.push(`/users/${record.id}`);
             }}
           >
-            <div
-              style={{
-                width: '50%',
-                marginRight: '8px',
-              }}
-            >
-              <Button
-                key="editConsutanlt"
-                type="#722ED1"
-                size="middle"
-                // icon eye
-
-                block={true}
-                onClick={() => handleEditSpecialist(record)}
-              >
-                Dịch vụ
-              </Button>
-            </div>
-          </div>
-        );
+            <Button type="primary">Xem</Button>
+          </a>,
+        ];
       },
     },
   ];
@@ -571,7 +587,7 @@ const User = () => {
             pageSize: 10,
             showSizeChanger: true,
             total: total,
-            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} tư vấn viên`,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} bản ghi`,
           }}
           search={{
             labelWidth: 'auto',
@@ -579,19 +595,19 @@ const User = () => {
             submittext: 'Lưu',
             resetText: 'Quay lại',
           }}
-          toolBarRender={(action) => [
-            <Button
-              size="middle"
-              key="buttonAddNews"
-              type="primary"
-              onClick={() => {
-                //chuyển qua trang chuyên môn
-                history.push('/users/consutanlts/specialization');
-              }}
-            >
-              Chuyên môn
-            </Button>,
-          ]}
+          // toolBarRender={(action) => [
+          //   <Button
+          //     size="middle"
+          //     key="buttonAddNews"
+          //     type="primary"
+          //     onClick={() => {
+          //       //chuyển qua trang chuyên môn
+          //       history.push('/users/consutanlts/specialization');
+          //     }}
+          //   >
+          //     Chuyên môn
+          //   </Button>,
+          // ]}
         />
       </PageContainer>
       {flagEditForm === 'edit' ? (
