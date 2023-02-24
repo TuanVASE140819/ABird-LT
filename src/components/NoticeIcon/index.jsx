@@ -3,7 +3,7 @@ import { Tag, message } from 'antd';
 import { groupBy } from 'lodash';
 import moment from 'moment';
 import { useModel, useRequest } from 'umi';
-import { getNotices, seenAllNoti } from '@/services/ant-design-pro/api';
+// import { getNotices, seenAllNoti } from '@/services/ant-design-pro/api';
 import NoticeIcon from './NoticeIcon';
 import styles from './index.less';
 import 'moment/locale/vi';
@@ -16,20 +16,20 @@ const NoticeIconView = () => {
 
   const [notifyList, setNotifyList] = useState([]);
 
-  useEffect(() => {
-    const getNotifyList = async () => {
-      try {
-        // const { data } = await getNotices();
-        // hiện thị 12 thông báo mới nhất
-        const { data } = await getNotices({ limit: 20 });
-        setNotifyList(data);
-      } catch (error) {}
-    };
+  // useEffect(() => {
+  //   const getNotifyList = async () => {
+  //     try {
+  //       // const { data } = await getNotices();
+  //       // hiện thị 12 thông báo mới nhất
+  //       const { data } = await getNotices({ limit: 20 });
+  //       setNotifyList(data);
+  //     } catch (error) {}
+  //   };
 
-    getNotifyList();
+  //   getNotifyList();
 
-    return () => clearInterval();
-  }, []);
+  //   return () => clearInterval();
+  // }, []);
 
   const depositList = notifyList.filter((item) => item.type === 'deposit');
   const withdrawList = notifyList.filter((item) => item.type === 'withdraw');

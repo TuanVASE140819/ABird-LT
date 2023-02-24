@@ -187,10 +187,11 @@ const User = () => {
           <a
             key="editable"
             onClick={() => {
+              localStorage.setItem('bookingId', record.id);
               history.push(`/users/${record.id}`);
             }}
           >
-            <Button type="primary">Xem</Button>
+            <Button type="primary">Chi tiết</Button>
           </a>,
         ];
       },
@@ -622,6 +623,7 @@ const User = () => {
           customUpload={customUpload}
           imgLinkFirebase={imgLinkFirebase}
           handleResetForm={handleResetForm}
+          buttonLoading={buttonEditLoading}
         />
       ) : (
         <ModalForm
@@ -635,6 +637,7 @@ const User = () => {
           customUpload={customUpload}
           imgLinkFirebase={imgLinkFirebase}
           handleResetForm={handleResetForm}
+          buttonLoading={buttonEditLoading}
         />
       )}
     </>

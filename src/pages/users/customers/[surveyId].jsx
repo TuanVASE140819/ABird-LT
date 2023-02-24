@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, EllipsisOutlined } from '@ant-design/icons';
-import { Button, Dropdown, message, Modal, Space, Tag } from 'antd';
+import { Button, Dropdown, message, Modal, Space, Tag, Image } from 'antd';
 import React, { useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
@@ -23,7 +23,7 @@ const User = (props) => {
   } = props;
   // modal xác nhân xóa
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [booking, setBooking] = useState(null);
+
   const showModalDelete = () => {
     setIsModalOpen(true);
   };
@@ -348,7 +348,8 @@ const User = (props) => {
     setFlagEditForm('add');
     setShowModel(!showModal);
   };
-
+  const [booking, setBooking] = React.useState({});
+  const [dateBooking, setDateBooking] = React.useState('');
   React.useEffect(() => {
     const bookingId = localStorage.getItem('bookingId');
     axios
@@ -356,13 +357,15 @@ const User = (props) => {
         `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${bookingId}`,
       )
       .then((response) => {
+        // const data1 = response.data.data[0].dateBooking;
         setBooking(response.data.data[0]);
       })
+
       .catch((error) => {
         console.log(error);
       });
   }, []);
-  console.log(booking);
+  console.log('booking', booking.dataBooking);
 
   return (
     <>
@@ -378,15 +381,22 @@ const User = (props) => {
             >
               <h1 style={{ textDecoration: 'underline' }}>CHI TIẾT LƯU TRÚ</h1>
               <h3>Thời điểm nhận:</h3>
-              <ProFormText width="md" disabled={true} />
+              <ProFormText
+                width="md"
+                disabled={true}
+                placeholder={booking?.dateBooking}
+                style={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
+              />
               <h3>Thời điểm trả:</h3>
-              <ProFormText width="md" disabled={true} />
+              <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd}></ProFormText>
+
               <h3>Chế độ ăn:</h3>
-              <ProFormText width="md" disabled={true} />
+              <ProFormText width="md" disabled={true} placeholder={'cám chim'} />
               <h3>Vệ sinh:</h3>
-              <ProFormText width="md" disabled={true} />
+              <ProFormText width="md" disabled={true} placeholder={'tắm thuốc'} />
               <h3>Dịch vụ khác:</h3>
-              <ProFormText width="md" disabled={true} />
+              <ProFormText width="md" disabled={true} placeholder={'tỉa lông , luyện hót'} />
+
               {/* button nằm bên phải procard */}
 
               <Button type="primary" onClick={onClickAddQuestion} style={{ float: 'right' }}>
@@ -396,10 +406,16 @@ const User = (props) => {
             <ProCard colSpan={8} style={{ height: 600 }} ghost direction="column">
               <ProCard>
                 <h1 style={{ textDecoration: 'underline' }}>CHIM</h1>
+                {/* <h3>Hình ảnh chim :</h3>
+                <img
+                  src={'https://dogily.vn/wp-content/uploads/2019/09/Phan-loai-chim-sao.jpg'}
+                  alt="Ảnh chim"
+                  style={{ width: '10%', height: '10%' }}
+                />  */}
                 <h3>Loại chim:</h3>
-                <ProFormText width="md" disabled={true} />
+                <ProFormText width="md" disabled={true} placeholder={booking?.typeOfBird} />
                 <h3>Sức khỏe - Bệnh lý:</h3>
-                <ProFormText height={100} disabled={true} />
+                <ProFormText height={100} disabled={true} placeholder={'Bình thường'} />
               </ProCard>
               <ProCard
                 //cách trên 18px
@@ -407,11 +423,11 @@ const User = (props) => {
               >
                 <h1 style={{ textDecoration: 'underline' }}>KHÁCH HÀNG</h1>
                 <h3>Họ và tên:</h3>
-                <ProFormText width="md" disabled={true} />
+                <ProFormText width="md" disabled={true} placeholder={booking?.customerName} />
                 <h3>SĐT:</h3>
-                <ProFormText width="md" disabled={true} />
+                <ProFormText width="md" disabled={true} placeholder={'038965973933'} />
                 <h3>Email:</h3>
-                <ProFormText height={100} disabled={true} />
+                <ProFormText height={100} disabled={true} placeholder={'caucavuighe@gmail.com'} />
               </ProCard>
             </ProCard>
           </ProCard>

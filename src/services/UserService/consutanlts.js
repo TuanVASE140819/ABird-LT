@@ -59,25 +59,25 @@ export const getAConsutanlt = async (userId) => {
     });
 };
 // ///api/Specializations/getbyconsultantid
-// export const getSpecializationsByUserId = async (userId) => {
-//   const accountId = localStorage.getItem('accountId');
-//   return await request
-//     // .get(`api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`)
-//     // .then((res) => {
-//     //   return res.data;
-//     // })
-//     // .catch((error) => {
-//     //   console.log('errorGetSpecializations', error);
-//     // });
-//     // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=2
-//     .get(`api/Bookings/GetBookingDetail?id=${userId}`)
-//     .then((res) => {
-//       return res.data[0].service;
-//     })
-//     .catch((error) => {
-//       console.log('errorGetSpecializations', error);
-//     });
-// };
+export const getSpecializationsByUserId = async (userId) => {
+  const accountId = localStorage.getItem('accountId');
+  return await request
+    // .get(`api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`)
+    // .then((res) => {
+    //   return res.data;
+    // })
+    // .catch((error) => {
+    //   console.log('errorGetSpecializations', error);
+    // });
+    // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=2
+    .get(`api/Bookings/GetBookingDetail?id=${userId}`)
+    .then((res) => {
+      return res.data[0].service;
+    })
+    .catch((error) => {
+      console.log('errorGetSpecializations', error);
+    });
+};
 
 export const getSpecializations = async () => {
   // https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=3&pagesize=10&pagenumber=1
