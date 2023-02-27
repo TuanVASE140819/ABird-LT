@@ -1,4 +1,5 @@
 import request from '@/utils/requestServer';
+import axios from 'axios';
 
 // /api/SurveyTypes/getallsurveytype
 
@@ -6,7 +7,36 @@ export const getSurveyTypeList = (body) => {
   return request.get('api/SurveyTypes/getallsurveytype');
 };
 
-///api/SurveyTypes/{id}
+export const createReport = async (bookingId) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const response = await axios.post(
+      'https://swpbirdboardingv1.azurewebsites.net/api/Bookings/CreateReport',
+      {
+        bookingId: bookingId,
+        date: today,
+        reportType: 'daily',
+        description: 'video sinh hoạt của chim',
+        msgHost: 'video sinh hoạt của chim',
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+//api​/Bookings​/GetBookingReportList
+export const getReportList = async (bookingId) => {
+  try {
+    const response = await axios.get(
+      `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingReportList?bookingId=${bookingId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 export const getASurveyType = async (zodiacId) => {
   // return await request.get(`api/SurveyTypes/${zodiacId}`).then((res) => {

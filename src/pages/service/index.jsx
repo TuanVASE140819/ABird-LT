@@ -372,13 +372,6 @@ const Service = () => {
     }
   };
 
-  const handleModal = () => {
-    setShowModel(!showModal);
-    setFlagEditForm('');
-    //vì hàm này ko liên quan đến edit user nên phải set lại user record = null
-    setUserRecord(null);
-  };
-
   const handleCancelModel = () => {
     setShowModel(false);
     setButtonLoading(false);

@@ -1,5 +1,26 @@
-import { DeleteOutlined, EditOutlined, EllipsisOutlined } from '@ant-design/icons';
-import { Button, Dropdown, message, Modal, Space, Tag, Image } from 'antd';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  RightOutlined,
+  SendOutlined,
+} from '@ant-design/icons';
+import {
+  Button,
+  Dropdown,
+  message,
+  Modal,
+  Space,
+  Tag,
+  Image,
+  Avatar,
+  Input,
+  List,
+  Comment,
+} from 'antd';
+
+import moment from 'moment';
+
 import React, { useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
@@ -7,15 +28,29 @@ import { PlusOutlined } from '@ant-design/icons';
 import ModalForm from '@/components/ModalForm';
 import axios from 'axios';
 // import { getAnCustomer, getCustomers, editCustomer } from '@/services/UserService/customers';
-import { updateQuestion, addQuestion, deleteQuestion } from '@/services/SurveyService/survey';
+import {
+  updateQuestion,
+  addQuestion,
+  deleteQuestion,
+  createReport,
+  getReportList,
+} from '@/services/SurveyService/survey';
 import { useModel } from 'umi';
 import { uploadFile } from '@/utils/uploadFile';
 import Profile from '../../survey/component/Profile';
 import dayjs from 'dayjs';
 import MapPicker from 'react-google-map-picker';
 import { ProCard, ProFormText } from '@ant-design/pro-components';
+import styled from 'styled-components';
 
 const User = (props) => {
+  const [open, setOpen] = useState(false);
+  const showModal1 = () => {
+    setOpen(true);
+  };
+  const hideModal = () => {
+    setOpen(false);
+  };
   const {
     match: {
       params: { zodiacId, surveyId },
@@ -349,7 +384,7 @@ const User = (props) => {
     setShowModel(!showModal);
   };
   const [booking, setBooking] = React.useState({});
-  const [dateBooking, setDateBooking] = React.useState('');
+  const [bookingReport, setBookingReport] = React.useState([]);
   React.useEffect(() => {
     const bookingId = localStorage.getItem('bookingId');
     axios
@@ -365,8 +400,118 @@ const User = (props) => {
         console.log(error);
       });
   }, []);
-  console.log('booking', booking.dataBooking);
+  React.useEffect(() => {
+    const bookingId = localStorage.getItem('bookingId');
+    axios
+      .get(
+        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingReportList?bookingId=${bookingId}`,
+      )
+      .then((response) => {
+        const data = response.data.data;
+        data.forEach((item) => {
+          item.datetime = moment(item.datetime).format('YYYY-MM-DD HH:mm:ss');
+        });
+        setBookingReport(data);
+        console.log(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+  // console.log(bookingReport.description);
+  const initialMessages = [
+    {
+      id: 1,
+      author: 'You',
+      content: 'Hello',
+      datetime: '2021-10-23 14:20:00',
+    },
+    {
+      id: 2,
+      author: 'Customer',
+      content: 'Hi there',
+      datetime: '2021-10-23 14:22:00',
+    },
+    {
+      id: 3,
+      author: 'Customer',
+      content: 'How can I help you?',
+      datetime: '2021-10-23 14:23:00',
+    },
+    {
+      id: 4,
+      author: 'You',
+      content: 'I have a question about my order',
+      datetime: '2021-10-23 14:24:00',
+    },
+    {
+      id: 5,
+      author: 'Customer',
+      content: 'Sure, what is your order number?',
+      datetime: '2021-10-23 14:25:00',
+    },
+    {
+      id: 6,
+      author: 'You',
+      content: 'My order number is 123456',
+      datetime: '2021-10-23 14:26:00',
+    },
+    {
+      id: 7,
+      author: 'Customer',
+      content: 'Let me check on that for you',
+      datetime: '2021-10-23 14:27:00',
+    },
+    {
+      id: 8,
+      author: 'Customer',
+      content: 'It looks like your order has shipped and should arrive in 2-3 business days',
+      datetime: '2021-10-23 14:28:00',
+    },
+    {
+      id: 9,
+      author: 'You',
+      content: 'Great, thanks for your help',
+      datetime: '2021-10-23 14:29:00',
+    },
+  ];
 
+  const ChatBubble = styled.div`
+    background-color: ${(props) => (props.isRight ? '#1890ff' : '#f2f2f2')};
+    color: ${(props) => (props.isRight ? '#fff' : '#000')};
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin-bottom: 8px;
+    max-width: 60%;
+    align-self: ${(props) => (props.isRight ? 'flex-end' : 'flex-start')};
+  `;
+  const [messages, setMessages] = useState(initialMessages);
+  const [collapsed, setCollapsed] = useState(true);
+  const handleSendMessage = (value) => {
+    if (value) {
+      const newMessage = {
+        id: messages.length + 1,
+        author: 'You',
+        content: value,
+        datetime: new Date().toISOString(),
+      };
+      setMessages([...messages, newMessage]);
+    }
+  };
+
+  const [visible, setVisible] = useState(false);
+
+  const handleCreateReportClick = () => {
+    try {
+      const bookingId = localStorage.getItem('bookingId');
+      createReport(bookingId);
+      message.loading('Đang xử lí ...', 9999);
+      actionRef?.current?.reload();
+      message.destroy();
+    } catch (error) {
+      message.fail('Lưu thất bại');
+    }
+  };
   return (
     <>
       <PageContainer>
@@ -388,8 +533,7 @@ const User = (props) => {
                 style={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
               />
               <h3>Thời điểm trả:</h3>
-              <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd}></ProFormText>
-
+              <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd} />
               <h3>Chế độ ăn:</h3>
               <ProFormText width="md" disabled={true} placeholder={'cám chim'} />
               <h3>Vệ sinh:</h3>
@@ -398,10 +542,84 @@ const User = (props) => {
               <ProFormText width="md" disabled={true} placeholder={'tỉa lông , luyện hót'} />
 
               {/* button nằm bên phải procard */}
-
-              <Button type="primary" onClick={onClickAddQuestion} style={{ float: 'right' }}>
+              <Button type="primary" onClick={showModal1} style={{ float: 'right' }}>
                 Thông tin chim qua từng ngày
               </Button>
+              <Modal
+                title="Thông tin chim qua từng ngày"
+                open={open}
+                onOk={hideModal}
+                onCancel={hideModal}
+                footer={null}
+                width={1000}
+              >
+                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateReportClick}>
+                  Tạo báo cáo
+                </Button>
+                {bookingReport?.map((item) => (
+                  <div key={item.id}>
+                    <ProCard
+                      //flex
+                      title={item.date}
+                      extra={
+                        <RightOutlined
+                          rotate={!collapsed[item.id] ? 90 : undefined}
+                          onClick={() => {
+                            setCollapsed({ ...collapsed, [item.id]: !collapsed[item.id] });
+                          }}
+                        />
+                      }
+                      style={{ marginBlockStart: 16, backgroundColor: '#f2f2f2' }}
+                      headerBordered
+                      collapsed={!collapsed[item.id]}
+                    >
+                      {collapsed[item.id] && (
+                        <ProCard
+                          title="Video"
+                          style={{ height: 500 }}
+                          headerBordered
+                          bodyStyle={{ padding: 0 }}
+                        >
+                          <div>
+                            {/* description */}
+                            <div style={{ padding: 16 }}>
+                              <h3>Thông tin</h3>
+                              <p>{item.description}</p>
+                            </div>
+                          </div>
+                        </ProCard>
+                      )}
+
+                      <div style={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
+                        <List
+                          itemLayout="horizontal"
+                          dataSource={messages}
+                          renderItem={(item) => (
+                            <Comment
+                              avatar={<Avatar>{item.author[0]}</Avatar>}
+                              content={
+                                <ChatBubble isRight={item.author === 'You'}>
+                                  {item.content}
+                                </ChatBubble>
+                              }
+                              datetime={item.datetime}
+                            />
+                          )}
+                          style={{ overflowY: 'scroll', flex: 1 }}
+                        />
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Input.Search
+                            placeholder="Type your message here..."
+                            enterButton={<SendOutlined />}
+                            onSearch={handleSendMessage}
+                            style={{ flex: 1 }}
+                          />
+                        </div>
+                      </div>
+                    </ProCard>
+                  </div>
+                ))}
+              </Modal>
             </ProCard>
             <ProCard colSpan={8} style={{ height: 600 }} ghost direction="column">
               <ProCard>
