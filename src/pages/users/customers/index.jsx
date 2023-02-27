@@ -1,17 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Descriptions, Dropdown, Menu, message, Modal, Space, Tag, Select } from 'antd';
-import { useRef } from 'react';
-import request from 'umi-request';
+import { EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, message, Space, Tag, Rate, Modal } from 'antd';
+import React, { useEffect } from 'react';
+import { PageContainer } from '@ant-design/pro-layout';
+import ProTable from '@ant-design/pro-table';
+import ModalForm from '@/components/ModalForm';
+import {
+  getBookingList,
+  getAConsutanlt,
+  editConsutanlt,
+  getSpecializationsByUserId,
+  getSpecializations,
+  editConsutanltSpecialization,
+  editConsutanltStatus,
+} from '@/services/UserService/consutanlts';
+import { useModel } from 'umi';
+import { uploadFile } from '@/utils/uploadFile';
+import Profile from './component/Profile';
+import { history } from 'umi';
 import dayjs from 'dayjs';
-import { MoreOutlined } from '@ant-design/icons';
-import axios from 'axios';
-const { Option } = Select;
-const accountId = localStorage.getItem('accountId');
+import request from 'umi-request';
 
-const Customers = () => {
-  const [defaultValue, setDefaultValue] = useState([]);
-  const columns = [
+const User = () => {
+  const column = [
     {
       title: 'STT',
       dataIndex: 'index',
@@ -102,6 +112,43 @@ const Customers = () => {
       },
     },
     {
+      title: 'Dịch vụ',
+      dataIndex: 'action',
+      search: false,
+      with: '30%',
+      render: (_, record) => {
+        return (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: '50%',
+                marginRight: '8px',
+              }}
+            >
+              <Button
+                key="editConsutanlt"
+                type="#722ED1"
+                size="middle"
+                // icon eye
+
+                block={true}
+                onClick={() => handleEditSpecialist(record)}
+              >
+                +
+              </Button>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       title: 'Thao tác',
       valueType: 'option',
       render: (text, record, _, action) => {
@@ -113,10 +160,11 @@ const Customers = () => {
                 Modal.confirm({
                   title: 'Xác nhận chấp nhận',
                   content: 'Bạn có chắc chắn muốn chấp nhận không?',
-                  okText: 'Xác nhận',
                   cancelText: 'Hủy',
                   onOk: async () => {
+                    console.log(record.id);
                     await acceptBooking(record.id);
+
                     message.success('Chấp nhận thành công');
                     action?.reload();
                   },
@@ -125,24 +173,6 @@ const Customers = () => {
             >
               <Button type="primary">Chấp nhận</Button>
             </a>,
-            <a
-              key="delete"
-              onClick={() => {
-                Modal.confirm({
-                  title: 'Xác nhận từ chối',
-                  content: 'Bạn có chắc chắn muốn từ chối không?',
-                  okText: 'Xác nhận',
-                  cancelText: 'Hủy',
-                  onOk: async () => {
-                    await rejectBooking(record.id);
-                    message.success('Từ chối thành công');
-                    action?.reload();
-                  },
-                });
-              }}
-            >
-              <Button type="danger">Từ chối</Button>
-            </a>,
           ];
         } else {
           return [];
@@ -150,160 +180,174 @@ const Customers = () => {
       },
     },
     {
-      title: 'Dịch vụ',
+      title: 'Xem thêm',
       valueType: 'option',
       render: (text, record, _, action) => {
         return [
           <a
             key="editable"
-            onClick={async () => {
-              try {
-                const response = await axios.get(
-                  `https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`,
-                );
-                const respbooking = await axios.get(
-                  `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${record.id}`,
-                );
-                const booking = respbooking.data;
-
-                const databooked = booking.data[0].service.map((service) => service.id);
-
-                const services = response.data;
-
-                Modal.info({
-                  title: 'Dịch vụ',
-                  content: (
-                    <Select
-                      mode="multiple"
-                      style={{
-                        width: '100%',
-                      }}
-                      placeholder="Chọn dịch vụ"
-                      optionLabelProp="label"
-                      defaultValue={databooked}
-                    >
-                      {services.data.map((service) => (
-                        <Option value={service.id} label={service.name}>
-                          <div className="demo-option-label-item">{service.name}</div>
-                        </Option>
-                      ))}
-                    </Select>
-                  ),
-                  onOk: async (values) => {
-                    const data = {
-                      bookingId: record.id,
-                      serId: booking.data[0].service.map((service) => service.id),
-                    };
-                    console.log(
-                      booking.data[0].service.map((service) => service.id),
-                      values,
-                    );
-                    try {
-                      const response = await axios.post(
-                        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/UpdateServiceBooking`,
-                        data,
-                        {
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                        },
-                      );
-                      if (response.status === 200) {
-                        message.success('Cập nhật thành công');
-                        action?.reload();
-                      }
-                    } catch (error) {
-                      console.error(error);
-                      message.error('Cập nhật thất bại');
-                    }
-                  },
-                  onCancel() {},
-                });
-              } catch (error) {
-                console.error(error);
-              }
+            onClick={() => {
+              localStorage.setItem('bookingId', record.id);
+              history.push(`/users/${record.id}`);
             }}
           >
-            <Button type="primary">Thêm dịch vụ</Button>
-          </a>,
-        ];
-      },
-    },
-    {
-      valueType: 'option',
-      render: (text, record, _, action) => {
-        return [
-          <a
-            key="editable"
-            onClick={async () => {
-              try {
-                const response = await fetch(
-                  `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${record.id}`,
-                );
-
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                // console.log(data.data[0].service);
-                Modal.info({
-                  title: 'Chi tiết đặt chỗ',
-                  content: (
-                    // hiện thị chi tiết đặt chỗ theo đúng id
-                    <div>
-                      <p>
-                        <b>Tên khách hàng: </b>
-                        {data.data[0].customerName}
-                      </p>
-                      <p>
-                        <b>Tên chim: </b>
-                        {data.data[0].birdOfCustomer}
-                      </p>
-                      <p>
-                        <b>Ngày bắt đầu: </b>
-                        {dayjs(data.data[0].dateStart).format('DD/MM/YYYY')}
-                      </p>
-                      <p>
-                        <b>Ngày kết thúc: </b>
-                        {dayjs(data.data[0].dateEnd).format('DD/MM/YYYY')}
-                      </p>
-                      <p>
-                        <b>Trạng thái: </b>
-
-                        {data.data[0].status === 'waiting' ? (
-                          <Tag color="warning">Đang chờ</Tag>
-                        ) : data.data[0].status === 'accepted' ? (
-                          <Tag color="success">Đã chấp nhận</Tag>
-                        ) : (
-                          <Tag color="error">Đã từ chối</Tag>
-                        )}
-                      </p>
-                      <p>
-                        <b>Dịch vụ: </b>
-                        {data.data[0].service.map((item) => (
-                          <Tag color="geekblue">{item.name}</Tag>
-                        ))}
-                        ,
-                      </p>
-                    </div>
-                  ),
-                });
-              } catch (error) {
-                console.error('There was an error!', error);
-              }
-            }}
-          >
-            <MoreOutlined />
+            <Button type="primary">Chi tiết</Button>
           </a>,
         ];
       },
     },
   ];
 
-  // https://psycteamv2.azurewebsites.net/api/Deposits/acceptdeposit?id=1
+  const buttonSubmitter = [
+    {
+      key: 'clearFieldFormUser',
+      type: 'default',
+      click: 'reset',
+      name: 'Quay lại',
+      loading: false,
+    },
+    {
+      key: 'submitAddUser',
+      type: 'primary',
+      click: 'submit',
+      name: 'Lưu',
+      loading: false,
+    },
+  ];
+
+  const formFieldAdd = [
+    {
+      fieldType: 'formText',
+      key: 'fieldAddUsername',
+      label: 'Họ và tên',
+      width: 'lg',
+      placeholder: 'Nhập tên người dùng',
+      name: 'username',
+      requiredField: 'true',
+    },
+    {
+      fieldType: 'formText',
+      key: 'fieldAddPhoneNumberUser',
+      label: 'Phone Number',
+      width: 'lg',
+      placeholder: 'Nhập số điện thoại',
+      name: 'phoneNumber',
+      requiredField: 'true',
+    },
+    {
+      fieldType: 'formInputFileImg',
+      key: 'fieldGetImgLink',
+      label: 'Ảnh đại diện',
+      width: 'lg',
+      placeholder: 'Avatar Link',
+      name: 'avatarLink',
+      nameUpload: 'avatarUser',
+      nameInputFile: 'avatarFileToFirebase',
+      readOnly: 'true',
+      // requiredField: 'true',
+      ruleMessage: 'Upload image before submit',
+    },
+  ];
+
+  const formFieldEdit = [
+    {
+      fieldType: 'formText',
+      key: 'fieldAddUsername',
+      label: 'Họ và tên',
+      width: 'lg',
+      placeholder: 'Nhập tên người dùng',
+      name: 'fullName',
+      value: 'fullname',
+      requiredField: 'true',
+      ruleMessage: 'Nhập tên người dùng',
+    },
+    {
+      fieldType: 'formText',
+      key: 'fieldAddPhoneNumberUser',
+      label: 'Gmail',
+      width: 'lg',
+      placeholder: 'NHập gmail',
+      name: 'email',
+      readOnly: 'true',
+      disabled: 'true',
+      value: '',
+      requiredField: 'true',
+      ruleMessage: 'Nhập gmail',
+      hidden: true,
+    },
+    // {
+    //   fieldType: 'formSelect',
+    //   key: 'selectStatusUser',
+    //   name: 'status',
+    //   label: 'Trạng thái',
+    //   defaultValue: 1,
+    //   valueEnum: [
+    //     {
+    //       valueName: 'active',
+    //       valueDisplay: 'Hoạt động',
+    //     },
+    //     {
+    //       valueName: 'inactive',
+    //       valueDisplay: 'Khóa',
+    //     },
+    //   ],
+    //   placeholder: 'Chọn trạng thái',
+    //   requiredField: 'true',
+    //   ruleMessage: 'Chọn trạng thái',
+    // },
+    {
+      fieldType: 'formInputFileImg',
+      key: 'fieldGetImgLink',
+      label: 'Ảnh đại diện',
+      width: 'lg',
+      placeholder: 'Avatar Link',
+      name: 'imageUrl',
+      nameUpload: 'avatarUser',
+      nameInputFile: 'avatarFileToFirebase',
+      readOnly: 'true',
+      requiredField: 'true',
+      ruleMessage: 'Tải ảnh lên trước khi submit',
+    },
+  ];
+  const formFieldEditSpecialist = [
+    {
+      fieldType: 'ProFormSelect',
+      key: 'selectSpecialist',
+      name: 'specialist',
+      label: 'Chuyên môn',
+      options: [
+        //api get specialist
+        {
+          value: '1',
+          label: 'Sự Nghiệp',
+        },
+        {
+          value: '2',
+          label: 'Gia Ðình',
+        },
+        {
+          value: '3',
+          label: 'Tình yêu',
+        },
+        {
+          value: '4',
+          label: 'Bạn Bè',
+        },
+        {
+          value: '5',
+          label: 'Các loại Bệnh',
+        },
+        {
+          value: '6',
+          label: 'Chuyên môn khác',
+        },
+      ],
+    },
+  ];
+
   const acceptBooking = async (id) => {
     const res = await request(
-      // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=12
+      // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=1
       `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=${id}`,
       {
         method: 'PUT',
@@ -312,96 +356,292 @@ const Customers = () => {
     return res;
   };
 
-  //https://psycteamv2.azurewebsites.net/api/Deposits/rejectdeposit?id=1
-  const rejectDeposit = async (id) => {
-    const res = await request(
-      `https://psycteamv2.azurewebsites.net/api/Deposits/rejectdeposit?id=${id}`,
-      {
-        method: 'PUT',
-      },
-    );
-    return res;
-  };
+  const actionRef = React.useRef();
+  const formUserRef = React.useRef();
+  const [showModal, setShowModel] = React.useState(false);
+  //state cua upload img len Firebase
+  const [imgLinkFirebase, setImgLinkFirebase] = React.useState(null);
+  const [loadingUploadImgFirebase, setLoadingUploadingImgFirebase] = React.useState(false);
 
-  const actionRef = useRef();
+  const [buttonLoading, setButtonLoading] = React.useState(false);
+  const [userRecord, setUserRecord] = React.useState(null);
+  const [flagEditForm, setFlagEditForm] = React.useState('');
+  const [buttonSubmitterUser, setButtonSubmitterUser] = React.useState(buttonSubmitter);
+  const [formFieldAddUser, setFormFieldAddUser] = React.useState(formFieldAdd);
+  const [formFieldEditUser, setFormFieldEditUser] = React.useState(formFieldEdit);
+  const [formFieldEditSpecialist1, setFormFieldEditSpecialist] = React.useState([]);
+
+  const { initialState, setInitialState } = useModel('@@initialState');
+
   //paging
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(8);
-  const [total, setTotal] = React.useState(90);
-  //trigger render table
-  const [triggerDataTable, setTriggerDataTable] = React.useState(false);
-  return (
-    <ProTable
-      columns={columns}
-      actionRef={actionRef}
-      cardBordered
-      request={async (params = {}, sort, filter) => {
-        console.log(sort, filter);
+  const [total, setTotal] = React.useState(10);
+  //button edit loading
+  const [buttonEditLoading, setButtonEditLoading] = React.useState(false);
 
-        return request(
-          // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?accountid=3&pagesize=10&pagenumber=1
-          `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?accountid=${accountId}&pagesize=${params.pageSize}&pagenumber=${params.current}`,
-          {
-            method: 'GET',
-            params: {
-              page: params.current,
-              pageSize: params.pageSize,
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await getSpecializations();
+        if (Array.isArray(response)) {
+          setFormFieldEditSpecialist([
+            {
+              fieldType: 'ProFormSelect',
+              key: 'selectSpecialist',
+              name: 'specialist',
+              // label: 'Chuyên môn',
+
+              options: response.map((item) => ({
+                value: item.id,
+                label: item.name,
+              })),
             },
-          },
-        ).then((res) => {
-          setTotal(res.total);
-          return {
-            data: res.data,
-            success: true,
-          };
+          ]);
+        }
+      } catch (error) {}
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    if (loadingUploadImgFirebase) {
+      message.loading('Đang tải ...', 9999);
+    } else {
+      message.destroy();
+    }
+    return () => {
+      message.destroy();
+    };
+  }, [loadingUploadImgFirebase]);
+
+  React.useEffect(() => {
+    if (buttonEditLoading) {
+      message.loading('Đang tải...', 9999);
+    } else {
+      message.destroy();
+    }
+    return () => {
+      message.destroy();
+    };
+  }, [buttonEditLoading]);
+
+  React.useEffect(() => {
+    const newButtonSubmitUser = buttonSubmitterUser.map((item) => {
+      if (item.name === 'Submit') {
+        item.loading = buttonLoading;
+      }
+      return item;
+    });
+    setButtonSubmitterUser(newButtonSubmitUser);
+  }, [buttonLoading]);
+
+  //customupload img
+  const customUpload = async ({ onError, onSuccess, file }) => {
+    const isImage = file.type.indexOf('image/') === 0;
+    if (!isImage) {
+      setLoadingUploadingImgFirebase(false);
+      message.destroy();
+      message.error('Bạn chỉ có thể tải lên tệp IMAGE!');
+      return isImage;
+    }
+    const isLt4M = file.size / 1024 / 1024 < 4;
+    if (!isLt4M) {
+      message.error('Hình ảnh phải nhỏ hơn 4MB!');
+      return isLt4M;
+    }
+    try {
+      setLoadingUploadingImgFirebase(true);
+      const imgLink = await uploadFile(file, 'useravatar');
+
+      if (imgLink) {
+        setImgLinkFirebase(imgLink);
+        formUserRef?.current?.setFieldsValue({
+          ['imageUrl']: imgLink,
         });
-      }}
-      editable={{
-        type: 'multiple',
-      }}
-      columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
-        persistenceType: 'localStorage',
-        onChange(value) {
-          console.log('value: ', value);
-        },
-      }}
-      rowKey="id"
-      search={{
-        labelWidth: 'auto',
-        searchText: 'Tìm kiếm',
-        submittext: 'Xác nhận',
-        resetText: 'Quay lại',
-        placeholderTitle: 'Tìm kiếm',
-      }}
-      options={{
-        setting: {
-          listsHeight: 400,
-        },
-      }}
-      form={{
-        // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return Object.assign(Object.assign({}, values), {
-              created_at: [values.startTime, values.endTime],
-            });
-          }
-          return values;
-        },
-      }}
-      pagination={{
-        //mặc định là 10
-        pageSize: 10,
-        showSizeChanger: true,
-        total: total,
-        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} giao dịch`,
-      }}
-      dateFormatter="string"
-      headerTitle="Danh sách giao dịch nạp tiền"
-      toolBarRender={() => []}
-    />
+        setLoadingUploadingImgFirebase(false);
+        message.success('Tải lên hình ảnh thành công!');
+      }
+    } catch (error) {
+      onError(error);
+    } finally {
+      setLoadingUploadingImgFirebase(false);
+    }
+  };
+
+  const handleModal = () => {
+    setShowModel(!showModal);
+    setFlagEditForm('');
+    //vì hàm này ko liên quan đến edit user nên phải set lại user record = null
+    setUserRecord(null);
+  };
+
+  const handleCancelModel = () => {
+    setShowModel(false);
+    setButtonLoading(false);
+    setFlagEditForm('');
+    // hàm này tắt modal nên cũng phải set lại edit user
+    setImgLinkFirebase(null);
+    setUserRecord(null);
+    if (formUserRef) {
+      formUserRef?.current?.resetFields();
+    }
+  };
+
+  const handleResetForm = () => {
+    formUserRef?.current?.resetFields();
+    setImgLinkFirebase(null);
+    setLoadingUploadingImgFirebase(false);
+  };
+
+  const handleSubmitFormUser = async (values) => {
+    setButtonEditLoading(true);
+    await editConsutanlt({ ...values, id: userRecord.id });
+    setButtonEditLoading(false);
+    setShowModel(false);
+    actionRef?.current?.reload();
+    message.success('Cập nhật thành công!');
+    // setButtonLoading(false);
+  };
+
+  const handleSubmitFormUser1 = async (values) => {
+    try {
+      await editConsutanltSpecialization({
+        bookingId: userRecord.id,
+        serId: values.specialist,
+      });
+      setShowModel(false);
+      actionRef?.current?.reload();
+    } catch (error) {}
+
+    // setButtonLoading(false);
+  };
+
+  const handleEditUserForm = async (record) => {
+    const userId = record?.id;
+    setButtonEditLoading(true);
+    const user = await getAConsutanlt(userId);
+    if (user) {
+      setUserRecord(user);
+      setFlagEditForm('edit');
+      setShowModel(!showModal);
+      setImgLinkFirebase(user.imageUrl);
+      formUserRef?.current?.setFieldsValue(user);
+    }
+    setButtonEditLoading(false);
+  };
+
+  const handleEditStatus = async (record) => {
+    try {
+      message.loading('Đang xử lí ...', 9999);
+      const userId = record?.id;
+      const user = await editConsutanltStatus(userId);
+      if (user) {
+        actionRef?.current?.reload();
+        message.destroy();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      message.destroy();
+      setButtonEditLoading(false);
+      message.success('Thay đổi trạng thái thành công!');
+    }
+  };
+
+  const expandedRowRender = (record) => {
+    return <Profile user={record} />;
+  };
+  const handleEditSpecialist = async (record) => {
+    const userId = record?.id;
+    setButtonEditLoading(true);
+    const user = await getSpecializationsByUserId(userId);
+    if (user) {
+      setUserRecord({ id: userId });
+      setShowModel(!showModal);
+      formUserRef?.current?.setFieldsValue({
+        specialist: user.map((item) => item.id),
+      });
+    }
+    setButtonEditLoading(false);
+  };
+  return (
+    <>
+      <PageContainer>
+        <ProTable
+          columns={column}
+          rowKey={(record) => record.id}
+          request={async (params, sorter, filter) => {
+            const res = await getBookingList(params);
+            if (res) {
+              console.log(res);
+              setTotal(res.total);
+              return {
+                data: res.data,
+                success: true,
+              };
+            }
+          }}
+          onReset={true}
+          actionRef={actionRef}
+          pagination={{
+            //mặc định là 10
+            pageSize: 10,
+            showSizeChanger: true,
+            total: total,
+            showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} bản ghi`,
+          }}
+          search={{
+            labelWidth: 'auto',
+            searchText: 'Tìm kiếm',
+            submittext: 'Lưu',
+            resetText: 'Quay lại',
+          }}
+          // toolBarRender={(action) => [
+          //   <Button
+          //     size="middle"
+          //     key="buttonAddNews"
+          //     type="primary"
+          //     onClick={() => {
+          //       //chuyển qua trang chuyên môn
+          //       history.push('/users/consutanlts/specialization');
+          //     }}
+          //   >
+          //     Chuyên môn
+          //   </Button>,
+          // ]}
+        />
+      </PageContainer>
+      {flagEditForm === 'edit' ? (
+        <ModalForm
+          showModal={showModal}
+          titleModal={`Chỉnh sửa :${userRecord?.fullName}`}
+          handleCancelModel={handleCancelModel}
+          formRef={formUserRef}
+          buttonSubmitter={buttonSubmitterUser}
+          handleSubmitForm={handleSubmitFormUser}
+          formField={formFieldEditUser}
+          customUpload={customUpload}
+          imgLinkFirebase={imgLinkFirebase}
+          handleResetForm={handleResetForm}
+          buttonLoading={buttonEditLoading}
+        />
+      ) : (
+        <ModalForm
+          showModal={showModal}
+          titleModal="Chỉnh sửa dịch vụ"
+          handleCancelModel={handleCancelModel}
+          formRef={formUserRef}
+          buttonSubmitter={buttonSubmitterUser}
+          handleSubmitForm={handleSubmitFormUser1}
+          formField={formFieldEditSpecialist1}
+          customUpload={customUpload}
+          imgLinkFirebase={imgLinkFirebase}
+          handleResetForm={handleResetForm}
+          buttonLoading={buttonEditLoading}
+        />
+      )}
+    </>
   );
 };
 
-export default React.memo(Customers);
+export default React.memo(User);

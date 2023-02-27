@@ -29,7 +29,6 @@ import {
 } from '@/services/SurveyService/survey';
 import showConfirm from '@/components/ModalConfirm';
 import ProSkeleton from '@ant-design/pro-skeleton';
-import SurveyTypeList from './component/SurveyTypeList';
 import { Content } from 'antd/lib/layout/layout';
 import { create } from 'lodash';
 import { history } from 'umi';
@@ -332,53 +331,7 @@ const Zodiac = (props) => {
 
   return (
     <>
-      <PageContainer
-        style={{
-          margin: '50px',
-          background: '#fff',
-        }}
-      >
-        <Content>
-          <div style={{ marginBottom: 30, fontSize: 20, fontWeight: 'bold' }}>
-            Loại khảo sát: {surveyType?.name}
-          </div>
-          <Button
-            size="middle"
-            key="buttonAddPlanet"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={onClickAdd}
-          >
-            Thêm khảo sát
-          </Button>
-          {loadingZodiac ? (
-            <ProSkeleton type="list" statistic={false} />
-          ) : (
-            <SurveyTypeList
-              dataList={dataList}
-              onDelete={onClickDelete}
-              onEdit={onClickEdit}
-              onClick={onClickDetail}
-            />
-          )}
-        </Content>
-      </PageContainer>
-      <ModalForm
-        showModal={showModal}
-        titleModal={mode === 'add' ? 'Thêm khảo sát' : 'Chỉnh sửa khảo sát'}
-        widthModal="900"
-        handleCancelModel={handleCancelModal}
-        formRef={formZodiacRef}
-        buttonSubmitter={buttonSubmitterZodiac}
-        handleSubmitForm={handleSubmitFormZodiac}
-        formField={formFieldAddZodiac}
-        customUpload={customUpload}
-        imgLinkFirebase={imgLinkFirebase}
-        stateEditor={stateEditor}
-        handleChangeStateEditor={handleChangeStateEditor}
-        editorRef={editorRef}
-        handleResetForm={handleResetForm}
-      />
+      <div>test</div>
     </>
   );
 };

@@ -67,6 +67,7 @@ export const getSevices = async (params) => {
     // https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=3&search=1&pagesize=10&pagenumber=1
     .get(`/api/Services/GetServiceList?id=${accountId}&pagesize=10&pagenumber=1`)
     .then((response) => {
+      console.log('response getUsers', response);
       return response.data;
     })
     .catch((error) => {
@@ -95,13 +96,13 @@ export const banUnbanCustomer = (id) => {
   return request.delete(`/api/Customers/${id}`);
 };
 
-export const GetBookingDetail = async (params) => {
-  return await request
-    .get(`/api/Bookings/GetBookingDetail?id=${params.id}`)
-    .then((response) => {
-      return response;
-    })
-    .catch((error) => {
-      return error;
-    });
-};
+// export const GetBookingDetail = async (params) => {
+//   return await request
+//     .get(`/api/Bookings/GetBookingDetail?id=${params.id}`)
+//     .then((response) => {
+//       return response;
+//     })
+//     .catch((error) => {
+//       return error;
+//     });
+// };
