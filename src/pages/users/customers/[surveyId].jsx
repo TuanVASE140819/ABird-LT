@@ -54,6 +54,7 @@ import TextArea from 'antd/lib/input/TextArea';
 
 const User = (props) => {
   const [open, setOpen] = useState(false);
+
   const showModal1 = () => {
     setOpen(true);
   };
@@ -399,6 +400,9 @@ const User = (props) => {
   };
   const [booking, setBooking] = React.useState({});
   const [bookingReport, setBookingReport] = React.useState([]);
+  const [serviceNames, setServiceNames] = React.useState([]);
+  const [bill, setBill] = React.useState({});
+
   React.useEffect(() => {
     const bookingId = localStorage.getItem('bookingId');
     axios
@@ -406,14 +410,30 @@ const User = (props) => {
         `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${bookingId}`,
       )
       .then((response) => {
-        // const data1 = response.data.data[0].dateBooking;
-        setBooking(response.data.data[0]);
+        const booking = response.data.data[0];
+        setBooking(booking);
+        const names = booking.service.map((item) => item.name);
+        setServiceNames(names);
       })
-
       .catch((error) => {
         console.log(error);
       });
   }, []);
+
+  React.useEffect(() => {
+    const bookingId = localStorage.getItem('bookingId');
+    axios
+      .get(
+        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBillBooking?bookingid=${bookingId}`,
+      )
+      .then((response) => {
+        setBill(response.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
   React.useEffect(() => {
     const bookingId = localStorage.getItem('bookingId');
     axios
@@ -432,7 +452,6 @@ const User = (props) => {
         console.log(error);
       });
   }, []);
-  // console.log(bookingReport.description);
   const initialMessages = [
     {
       id: 1,
@@ -526,6 +545,7 @@ const User = (props) => {
       message.fail('Lưu thất bại');
     }
   };
+
   return (
     <>
       <PageContainer>
@@ -548,29 +568,28 @@ const User = (props) => {
               />
               <h3>Thời điểm trả:</h3>
               <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd} />
-              {/* <h3>Chế độ ăn:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'cám chim'} />
-              <h3>Vệ sinh:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'tắm thuốc'} /> */}
-              <h3>Dịch vụ khác</h3>
+
+              <h3>Dịch vụ</h3>
               <TextArea
                 rows={4}
                 maxLength={6}
                 // hiện thị tên sevices trong dó
-                value={booking?.dateEnd}
+                value={serviceNames.join(', ')} // join các tên dịch vụ bằng dấu phẩy và khoảng trắng
+                disabled={true}
               />
 
               <div style={{ marginTop: 20 }}>
-                <Button type="primary" onClick={showModal1} style={{ float: 'right' }}>
-                  Thông tin chim qua từng ngày
-                </Button>
                 <Button
                   type="primary"
+                  style={{ float: 'right' }}
                   onClick={() => {
                     setDrawerVisit(true);
                   }}
                 >
                   Hoá đơn
+                </Button>
+                <Button type="primary" onClick={showModal1} style={{ float: 'left' }}>
+                  Thông tin chim qua từng ngày
                 </Button>
               </div>
               <DrawerForm
@@ -589,9 +608,7 @@ const User = (props) => {
                     name="name"
                     disabled
                     label="Tên khách hàng :"
-                    value={{
-                      label: 'customerName',
-                    }}
+                    value={bill.customerName}
                   />
 
                   <ProFormText
@@ -599,22 +616,43 @@ const User = (props) => {
                     disabled
                     name="company"
                     label="Chim của khách hàng :"
-                    value={{
-                      label: 'customerName',
-                    }}
+                    value={bill.birdOfCustomer}
                   />
                 </ProForm.Group>
                 <ProForm.Group>
-                  <ProFormText width="md" name="contract" disabled label="Loại chim :" />
-                  <ProFormText width="md" name="contract" disabled label="Ngày nhận :" />
+                  <ProFormText
+                    width="md"
+                    name="contract"
+                    disabled
+                    label="Loại chim :"
+                    value={bill.typeOfBird}
+                  />
+                  <ProFormText
+                    width="md"
+                    name="contract"
+                    disabled
+                    label="Ngày nhận :"
+                    value={bill.dateBooking}
+                  />
                 </ProForm.Group>
-                <ProFormText name="contract" disabled label="Ngày bắt đầu :" />
-                <ProFormText name="contract" disabled label="Ngày kết thúc  :" />
+                <ProFormText
+                  name="contract"
+                  disabled
+                  label="Ngày bắt đầu :"
+                  value={bill.dateStart}
+                />
+                <ProFormText
+                  name="contract"
+                  disabled
+                  label="Ngày kết thúc  :"
+                  value={bill.dateEnd}
+                />
 
                 <ProFormText name="project" disabled label="Dịch vụ :" />
+                <ProFormText name="project" disabled label="Số ngày:" value={bill.amountDay} />
                 <CheckCard
                   title="Tổng tiền"
-                  description={booking?.dateBooking}
+                  description={bill.total}
                   //description color red, italic, bold
                   descriptionStyle={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
                   avatar="https://gw.alipayobjects.com/zos/bmw-prod/f601048d-61c2-44d0-bf57-ca1afe7fd92e.svg"
@@ -660,6 +698,13 @@ const User = (props) => {
                             <div style={{ padding: 16 }}>
                               <h3>Thông tin</h3>
                               <p>{item.description}</p>
+                              <video
+                                width="100%"
+                                height="100%"
+                                controls
+                                src={item.videoUrl}
+                                style={{ objectFit: 'cover' }}
+                              />
                             </div>
                           </div>
                         </ProCard>
