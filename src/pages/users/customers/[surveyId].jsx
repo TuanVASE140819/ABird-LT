@@ -40,12 +40,24 @@ import { uploadFile } from '@/utils/uploadFile';
 import Profile from '../../survey/component/Profile';
 import dayjs from 'dayjs';
 import MapPicker from 'react-google-map-picker';
-import { ProCard, ProFormText } from '@ant-design/pro-components';
+import {
+  ProCard,
+  ProFormText,
+  DrawerForm,
+  ProFormDateRangePicker,
+  ProFormSelect,
+  ProForm,
+  CheckCard,
+} from '@ant-design/pro-components';
 import styled from 'styled-components';
+import TextArea from 'antd/lib/input/TextArea';
 
 const User = (props) => {
   const [open, setOpen] = useState(false);
   const showModal1 = () => {
+    setOpen(true);
+  };
+  const showModalBill = () => {
     setOpen(true);
   };
   const hideModal = () => {
@@ -221,6 +233,8 @@ const User = (props) => {
   const [defaultLocation, setDefaultLocation] = useState(DefaultLocation);
   const [location, setLocation] = useState(defaultLocation);
   const [zoom, setZoom] = useState(DefaultZoom);
+
+  const [drawerVisit, setDrawerVisit] = useState(false);
 
   React.useEffect(() => {
     if (loadingUploadImgFirebase) {
@@ -534,17 +548,78 @@ const User = (props) => {
               />
               <h3>Thời điểm trả:</h3>
               <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd} />
-              <h3>Chế độ ăn:</h3>
+              {/* <h3>Chế độ ăn:</h3>
               <ProFormText width="md" disabled={true} placeholder={'cám chim'} />
               <h3>Vệ sinh:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'tắm thuốc'} />
-              <h3>Dịch vụ khác:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'tỉa lông , luyện hót'} />
+              <ProFormText width="md" disabled={true} placeholder={'tắm thuốc'} /> */}
+              <h3>Dịch vụ khác</h3>
+              <TextArea
+                rows={4}
+                maxLength={6}
+                // hiện thị tên sevices trong dó
+                value={booking?.dateEnd}
+              />
 
-              {/* button nằm bên phải procard */}
-              <Button type="primary" onClick={showModal1} style={{ float: 'right' }}>
-                Thông tin chim qua từng ngày
-              </Button>
+              <div style={{ marginTop: 20 }}>
+                <Button type="primary" onClick={showModal1} style={{ float: 'right' }}>
+                  Thông tin chim qua từng ngày
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    setDrawerVisit(true);
+                  }}
+                >
+                  Hoá đơn
+                </Button>
+              </div>
+              <DrawerForm
+                onOpenChange={setDrawerVisit}
+                title="Hoá đơn"
+                open={drawerVisit}
+                okText="Xuất hoá đơn"
+                onFinish={async () => {
+                  message.success('Xuất hoá đơn thành công');
+                  return true;
+                }}
+              >
+                <ProForm.Group>
+                  <ProFormText
+                    width="md"
+                    name="name"
+                    disabled
+                    label="Tên khách hàng :"
+                    value={{
+                      label: 'customerName',
+                    }}
+                  />
+
+                  <ProFormText
+                    width="md"
+                    disabled
+                    name="company"
+                    label="Chim của khách hàng :"
+                    value={{
+                      label: 'customerName',
+                    }}
+                  />
+                </ProForm.Group>
+                <ProForm.Group>
+                  <ProFormText width="md" name="contract" disabled label="Loại chim :" />
+                  <ProFormText width="md" name="contract" disabled label="Ngày nhận :" />
+                </ProForm.Group>
+                <ProFormText name="contract" disabled label="Ngày bắt đầu :" />
+                <ProFormText name="contract" disabled label="Ngày kết thúc  :" />
+
+                <ProFormText name="project" disabled label="Dịch vụ :" />
+                <CheckCard
+                  title="Tổng tiền"
+                  description={booking?.dateBooking}
+                  //description color red, italic, bold
+                  descriptionStyle={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
+                  avatar="https://gw.alipayobjects.com/zos/bmw-prod/f601048d-61c2-44d0-bf57-ca1afe7fd92e.svg"
+                />
+              </DrawerForm>
               <Modal
                 title="Thông tin chim qua từng ngày"
                 open={open}
@@ -621,6 +696,7 @@ const User = (props) => {
                 ))}
               </Modal>
             </ProCard>
+
             <ProCard colSpan={8} style={{ height: 600 }} ghost direction="column">
               <ProCard>
                 <h1 style={{ textDecoration: 'underline' }}>CHIM</h1>
