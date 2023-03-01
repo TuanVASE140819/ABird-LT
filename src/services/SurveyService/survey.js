@@ -7,20 +7,10 @@ export const getSurveyTypeList = (body) => {
   return request.get('api/SurveyTypes/getallsurveytype');
 };
 
-export const createReport = async (bookingId) => {
+export const createReport = async (body) => {
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const response = await axios.post(
-      'https://swpbirdboardingv1.azurewebsites.net/api/Bookings/CreateReport',
-      {
-        bookingId: bookingId,
-        date: today,
-        reportType: 'daily',
-        description: 'video sinh hoạt của chim',
-        msgHost: 'video sinh hoạt của chim',
-      },
-    );
-    return response.data;
+    //const today = new Date().toISOString().slice(0, 10);
+    return request.post('api/Bookings/CreateReport', { data: body });
   } catch (error) {
     console.error(error);
   }

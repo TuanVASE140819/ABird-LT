@@ -10,13 +10,12 @@ import {
   Dropdown,
   message,
   Modal,
-  Space,
-  Tag,
-  Image,
+  DatePicker,
   Avatar,
   Input,
   List,
   Comment,
+  Form,
 } from 'antd';
 
 import moment from 'moment';
@@ -48,6 +47,7 @@ import {
   ProFormSelect,
   ProForm,
   CheckCard,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import styled from 'styled-components';
 import TextArea from 'antd/lib/input/TextArea';
@@ -179,6 +179,12 @@ const User = (props) => {
   ];
 
   const formFieldAdd = [
+    // {
+    //   "bookingId": 0,
+    //   "date": "2023-03-01T15:03:17.101Z",
+    //   "description": "string",
+    //   "msgHost": "string"
+    // }
     {
       fieldType: 'formText',
       key: 'fieldAddUsername',
@@ -186,6 +192,24 @@ const User = (props) => {
       width: 'lg',
       name: 'description',
       value: 'description',
+      requiredField: 'true',
+    },
+    {
+      fieldType: 'formText',
+      key: 'fieldAddUsername',
+      label: 'Ngày',
+      width: 'lg',
+      name: 'date',
+      value: 'date',
+      requiredField: 'true',
+    },
+    {
+      fieldType: 'formText',
+      key: 'fieldAddUsername',
+      label: 'Tin nhắn',
+      width: 'lg',
+      name: 'msgHost',
+      value: 'msgHost',
       requiredField: 'true',
     },
   ];
@@ -533,13 +557,26 @@ const User = (props) => {
   };
 
   const [visible, setVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const { RangePicker } = DatePicker;
 
-  const handleCreateReportClick = () => {
+  const handleCancelInfo = () => {
+    setIsModalVisible(false);
+  };
+
+  const [isModalVisibleReport, setIsModalVisibleReport] = useState(false);
+  const handleCreateReportClick = async (values) => {
     try {
       const bookingId = localStorage.getItem('bookingId');
-      createReport(bookingId);
+      await createReport({
+        bookingId,
+        date: values.date,
+        description: values.description,
+        msgHost: values.message,
+      });
       message.loading('Đang xử lí ...', 9999);
       actionRef?.current?.reload();
+      setIsModalVisibleReport(false);
       message.destroy();
     } catch (error) {
       message.fail('Lưu thất bại');
@@ -562,12 +599,12 @@ const User = (props) => {
               <h3>Thời điểm nhận:</h3>
               <ProFormText
                 width="md"
-                disabled={true}
-                placeholder={booking?.dateBooking}
+                //
+                value={booking?.dateBooking}
                 style={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
               />
               <h3>Thời điểm trả:</h3>
-              <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd} />
+              <ProFormText width="md" value={booking?.dateEnd} />
 
               <h3>Dịch vụ</h3>
               <TextArea
@@ -575,7 +612,7 @@ const User = (props) => {
                 maxLength={6}
                 // hiện thị tên sevices trong dó
                 value={serviceNames.join(', ')} // join các tên dịch vụ bằng dấu phẩy và khoảng trắng
-                disabled={true}
+                //
               />
 
               <div style={{ marginTop: 20 }}>
@@ -648,7 +685,12 @@ const User = (props) => {
                   value={bill.dateEnd}
                 />
 
-                <ProFormText name="project" disabled label="Dịch vụ :" />
+                <ProFormText
+                  name="project"
+                  disabled
+                  label="Dịch vụ :"
+                  value={serviceNames.join(', ')}
+                />
                 <ProFormText name="project" disabled label="Số ngày:" value={bill.amountDay} />
                 <CheckCard
                   title="Tổng tiền"
@@ -666,9 +708,55 @@ const User = (props) => {
                 footer={null}
                 width={1000}
               >
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateReportClick}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsModalVisibleReport(true)}
+                >
                   Tạo báo cáo
                 </Button>
+                <Modal
+                  title="Thông tin tạo báo cáo"
+                  visible={isModalVisibleReport}
+                  okText="Lưu"
+                  onCancel={handleCancelInfo}
+                  footer={[
+                    <Button key="back" onClick={handleCancelInfo}>
+                      Hủy bỏ
+                    </Button>,
+                    <Button form="createReportForm" key="submit" htmlType="submit" type="primary">
+                      Lưu
+                    </Button>,
+                  ]}
+                >
+                  <Form
+                    name="createReportForm"
+                    initialValues={{ remember: true }}
+                    onFinish={handleCreateReportClick}
+                  >
+                    <Form.Item
+                      name="date"
+                      label="Ngày"
+                      rules={[{ required: true, message: 'Vui lòng chọn ngày!' }]}
+                    >
+                      <DatePicker />
+                    </Form.Item>
+                    <Form.Item
+                      name="description"
+                      label="Mô tả"
+                      rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+                    >
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="message"
+                      label="Thông điệp"
+                      rules={[{ required: true, message: 'Vui lòng nhập thông điệp!' }]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Form>
+                </Modal>
                 {bookingReport?.map((item) => (
                   <div key={item.id}>
                     <ProCard
@@ -698,12 +786,11 @@ const User = (props) => {
                             <div style={{ padding: 16 }}>
                               <h3>Thông tin</h3>
                               <p>{item.description}</p>
-                              <video
+                              <iframe
                                 width="100%"
-                                height="100%"
-                                controls
-                                src={item.videoUrl}
-                                style={{ objectFit: 'cover' }}
+                                height="315"
+                                src="https://www.youtube.com/embed/KUybRJNfMXE"
+                                title="YouTube video player"
                               />
                             </div>
                           </div>
@@ -711,25 +798,24 @@ const User = (props) => {
                       )}
 
                       <div style={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
-                        <List
-                          itemLayout="horizontal"
-                          dataSource={messages}
-                          renderItem={(item) => (
-                            <Comment
-                              avatar={<Avatar>{item.author[0]}</Avatar>}
-                              content={
-                                <ChatBubble isRight={item.author === 'You'}>
-                                  {item.content}
-                                </ChatBubble>
-                              }
-                              datetime={item.datetime}
-                            />
-                          )}
-                          style={{ overflowY: 'scroll', flex: 1 }}
+                        <ProFormTextArea
+                          // hiện thị tin nhán của messageHost trong dó
+                          value={item.messageHost}
+                          disabled
+                          label="Bạn"
+                          color="red"
+                        />
+
+                        <ProFormTextArea
+                          // hiện thị tin nhán của messageHost trong dó
+                          placeholder={'chưa có trả lời'}
+                          value={item.messageCustomer}
+                          disabled
+                          label="Khách hàng"
                         />
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Input.Search
-                            placeholder="Type your message here..."
+                            //
                             enterButton={<SendOutlined />}
                             onSearch={handleSendMessage}
                             style={{ flex: 1 }}
@@ -752,9 +838,9 @@ const User = (props) => {
                   style={{ width: '10%', height: '10%' }}
                 />  */}
                 <h3>Loại chim:</h3>
-                <ProFormText width="md" disabled={true} placeholder={booking?.typeOfBird} />
-                <h3>Sức khỏe - Bệnh lý:</h3>
-                <ProFormText height={100} disabled={true} placeholder={'Bình thường'} />
+                <ProFormText width="md" value={booking?.typeOfBird} />
+                {/* <h3>Sức khỏe - Bệnh lý:</h3>
+                <ProFormText height={100} value={'Bình thường'} /> */}
               </ProCard>
               <ProCard
                 //cách trên 18px
@@ -762,11 +848,11 @@ const User = (props) => {
               >
                 <h1 style={{ textDecoration: 'underline' }}>KHÁCH HÀNG</h1>
                 <h3>Họ và tên:</h3>
-                <ProFormText width="md" disabled={true} placeholder={booking?.customerName} />
+                <ProFormText width="md" value={booking?.customerName} />
                 <h3>SĐT:</h3>
-                <ProFormText width="md" disabled={true} placeholder={'038965973933'} />
+                <ProFormText width="md" value={'038965973933'} />
                 <h3>Email:</h3>
-                <ProFormText height={100} disabled={true} placeholder={'caucavuighe@gmail.com'} />
+                <ProFormText height={100} value={'caucavuighe@gmail.com'} />
               </ProCard>
             </ProCard>
           </ProCard>
