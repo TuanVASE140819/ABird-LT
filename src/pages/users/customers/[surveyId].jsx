@@ -10,13 +10,12 @@ import {
   Dropdown,
   message,
   Modal,
-  Space,
-  Tag,
-  Image,
+  DatePicker,
   Avatar,
   Input,
   List,
   Comment,
+  Form,
 } from 'antd';
 
 import moment from 'moment';
@@ -40,12 +39,26 @@ import { uploadFile } from '@/utils/uploadFile';
 import Profile from '../../survey/component/Profile';
 import dayjs from 'dayjs';
 import MapPicker from 'react-google-map-picker';
-import { ProCard, ProFormText } from '@ant-design/pro-components';
+import {
+  ProCard,
+  ProFormText,
+  DrawerForm,
+  ProFormDateRangePicker,
+  ProFormSelect,
+  ProForm,
+  CheckCard,
+  ProFormTextArea,
+} from '@ant-design/pro-components';
 import styled from 'styled-components';
+import TextArea from 'antd/lib/input/TextArea';
 
 const User = (props) => {
   const [open, setOpen] = useState(false);
+
   const showModal1 = () => {
+    setOpen(true);
+  };
+  const showModalBill = () => {
     setOpen(true);
   };
   const hideModal = () => {
@@ -166,6 +179,12 @@ const User = (props) => {
   ];
 
   const formFieldAdd = [
+    // {
+    //   "bookingId": 0,
+    //   "date": "2023-03-01T15:03:17.101Z",
+    //   "description": "string",
+    //   "msgHost": "string"
+    // }
     {
       fieldType: 'formText',
       key: 'fieldAddUsername',
@@ -173,6 +192,24 @@ const User = (props) => {
       width: 'lg',
       name: 'description',
       value: 'description',
+      requiredField: 'true',
+    },
+    {
+      fieldType: 'formText',
+      key: 'fieldAddUsername',
+      label: 'Ngày',
+      width: 'lg',
+      name: 'date',
+      value: 'date',
+      requiredField: 'true',
+    },
+    {
+      fieldType: 'formText',
+      key: 'fieldAddUsername',
+      label: 'Tin nhắn',
+      width: 'lg',
+      name: 'msgHost',
+      value: 'msgHost',
       requiredField: 'true',
     },
   ];
@@ -221,6 +258,8 @@ const User = (props) => {
   const [defaultLocation, setDefaultLocation] = useState(DefaultLocation);
   const [location, setLocation] = useState(defaultLocation);
   const [zoom, setZoom] = useState(DefaultZoom);
+
+  const [drawerVisit, setDrawerVisit] = useState(false);
 
   React.useEffect(() => {
     if (loadingUploadImgFirebase) {
@@ -385,6 +424,9 @@ const User = (props) => {
   };
   const [booking, setBooking] = React.useState({});
   const [bookingReport, setBookingReport] = React.useState([]);
+  const [serviceNames, setServiceNames] = React.useState([]);
+  const [bill, setBill] = React.useState({});
+
   React.useEffect(() => {
     const bookingId = localStorage.getItem('bookingId');
     axios
@@ -392,14 +434,30 @@ const User = (props) => {
         `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${bookingId}`,
       )
       .then((response) => {
-        // const data1 = response.data.data[0].dateBooking;
-        setBooking(response.data.data[0]);
+        const booking = response.data.data[0];
+        setBooking(booking);
+        const names = booking.service.map((item) => item.name);
+        setServiceNames(names);
       })
-
       .catch((error) => {
         console.log(error);
       });
   }, []);
+
+  React.useEffect(() => {
+    const bookingId = localStorage.getItem('bookingId');
+    axios
+      .get(
+        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBillBooking?bookingid=${bookingId}`,
+      )
+      .then((response) => {
+        setBill(response.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
   React.useEffect(() => {
     const bookingId = localStorage.getItem('bookingId');
     axios
@@ -418,7 +476,6 @@ const User = (props) => {
         console.log(error);
       });
   }, []);
-  // console.log(bookingReport.description);
   const initialMessages = [
     {
       id: 1,
@@ -500,18 +557,32 @@ const User = (props) => {
   };
 
   const [visible, setVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const { RangePicker } = DatePicker;
 
-  const handleCreateReportClick = () => {
+  const handleCancelInfo = () => {
+    setIsModalVisible(false);
+  };
+
+  const [isModalVisibleReport, setIsModalVisibleReport] = useState(false);
+  const handleCreateReportClick = async (values) => {
     try {
       const bookingId = localStorage.getItem('bookingId');
-      createReport(bookingId);
+      await createReport({
+        bookingId,
+        date: values.date,
+        description: values.description,
+        msgHost: values.message,
+      });
       message.loading('Đang xử lí ...', 9999);
       actionRef?.current?.reload();
+      setIsModalVisibleReport(false);
       message.destroy();
     } catch (error) {
       message.fail('Lưu thất bại');
     }
   };
+
   return (
     <>
       <PageContainer>
@@ -528,23 +599,107 @@ const User = (props) => {
               <h3>Thời điểm nhận:</h3>
               <ProFormText
                 width="md"
-                disabled={true}
-                placeholder={booking?.dateBooking}
+                //
+                value={booking?.dateBooking}
                 style={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
               />
               <h3>Thời điểm trả:</h3>
-              <ProFormText width="md" disabled={true} placeholder={booking?.dateEnd} />
-              <h3>Chế độ ăn:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'cám chim'} />
-              <h3>Vệ sinh:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'tắm thuốc'} />
-              <h3>Dịch vụ khác:</h3>
-              <ProFormText width="md" disabled={true} placeholder={'tỉa lông , luyện hót'} />
+              <ProFormText width="md" value={booking?.dateEnd} />
 
-              {/* button nằm bên phải procard */}
-              <Button type="primary" onClick={showModal1} style={{ float: 'right' }}>
-                Thông tin chim qua từng ngày
-              </Button>
+              <h3>Dịch vụ</h3>
+              <TextArea
+                rows={4}
+                maxLength={6}
+                // hiện thị tên sevices trong dó
+                value={serviceNames.join(', ')} // join các tên dịch vụ bằng dấu phẩy và khoảng trắng
+                //
+              />
+
+              <div style={{ marginTop: 20 }}>
+                <Button
+                  type="primary"
+                  style={{ float: 'right' }}
+                  onClick={() => {
+                    setDrawerVisit(true);
+                  }}
+                >
+                  Hoá đơn
+                </Button>
+                <Button type="primary" onClick={showModal1} style={{ float: 'left' }}>
+                  Thông tin chim qua từng ngày
+                </Button>
+              </div>
+              <DrawerForm
+                onOpenChange={setDrawerVisit}
+                title="Hoá đơn"
+                open={drawerVisit}
+                okText="Xuất hoá đơn"
+                onFinish={async () => {
+                  message.success('Xuất hoá đơn thành công');
+                  return true;
+                }}
+              >
+                <ProForm.Group>
+                  <ProFormText
+                    width="md"
+                    name="name"
+                    disabled
+                    label="Tên khách hàng :"
+                    value={bill.customerName}
+                  />
+
+                  <ProFormText
+                    width="md"
+                    disabled
+                    name="company"
+                    label="Chim của khách hàng :"
+                    value={bill.birdOfCustomer}
+                  />
+                </ProForm.Group>
+                <ProForm.Group>
+                  <ProFormText
+                    width="md"
+                    name="contract"
+                    disabled
+                    label="Loại chim :"
+                    value={bill.typeOfBird}
+                  />
+                  <ProFormText
+                    width="md"
+                    name="contract"
+                    disabled
+                    label="Ngày nhận :"
+                    value={bill.dateBooking}
+                  />
+                </ProForm.Group>
+                <ProFormText
+                  name="contract"
+                  disabled
+                  label="Ngày bắt đầu :"
+                  value={bill.dateStart}
+                />
+                <ProFormText
+                  name="contract"
+                  disabled
+                  label="Ngày kết thúc  :"
+                  value={bill.dateEnd}
+                />
+
+                <ProFormText
+                  name="project"
+                  disabled
+                  label="Dịch vụ :"
+                  value={serviceNames.join(', ')}
+                />
+                <ProFormText name="project" disabled label="Số ngày:" value={bill.amountDay} />
+                <CheckCard
+                  title="Tổng tiền"
+                  description={bill.total}
+                  //description color red, italic, bold
+                  descriptionStyle={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
+                  avatar="https://gw.alipayobjects.com/zos/bmw-prod/f601048d-61c2-44d0-bf57-ca1afe7fd92e.svg"
+                />
+              </DrawerForm>
               <Modal
                 title="Thông tin chim qua từng ngày"
                 open={open}
@@ -553,9 +708,55 @@ const User = (props) => {
                 footer={null}
                 width={1000}
               >
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateReportClick}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsModalVisibleReport(true)}
+                >
                   Tạo báo cáo
                 </Button>
+                <Modal
+                  title="Thông tin tạo báo cáo"
+                  visible={isModalVisibleReport}
+                  okText="Lưu"
+                  onCancel={handleCancelInfo}
+                  footer={[
+                    <Button key="back" onClick={handleCancelInfo}>
+                      Hủy bỏ
+                    </Button>,
+                    <Button form="createReportForm" key="submit" htmlType="submit" type="primary">
+                      Lưu
+                    </Button>,
+                  ]}
+                >
+                  <Form
+                    name="createReportForm"
+                    initialValues={{ remember: true }}
+                    onFinish={handleCreateReportClick}
+                  >
+                    <Form.Item
+                      name="date"
+                      label="Ngày"
+                      rules={[{ required: true, message: 'Vui lòng chọn ngày!' }]}
+                    >
+                      <DatePicker />
+                    </Form.Item>
+                    <Form.Item
+                      name="description"
+                      label="Mô tả"
+                      rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+                    >
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name="message"
+                      label="Thông điệp"
+                      rules={[{ required: true, message: 'Vui lòng nhập thông điệp!' }]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Form>
+                </Modal>
                 {bookingReport?.map((item) => (
                   <div key={item.id}>
                     <ProCard
@@ -585,31 +786,36 @@ const User = (props) => {
                             <div style={{ padding: 16 }}>
                               <h3>Thông tin</h3>
                               <p>{item.description}</p>
+                              <iframe
+                                width="100%"
+                                height="315"
+                                src="https://www.youtube.com/embed/KUybRJNfMXE"
+                                title="YouTube video player"
+                              />
                             </div>
                           </div>
                         </ProCard>
                       )}
 
                       <div style={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
-                        <List
-                          itemLayout="horizontal"
-                          dataSource={messages}
-                          renderItem={(item) => (
-                            <Comment
-                              avatar={<Avatar>{item.author[0]}</Avatar>}
-                              content={
-                                <ChatBubble isRight={item.author === 'You'}>
-                                  {item.content}
-                                </ChatBubble>
-                              }
-                              datetime={item.datetime}
-                            />
-                          )}
-                          style={{ overflowY: 'scroll', flex: 1 }}
+                        <ProFormTextArea
+                          // hiện thị tin nhán của messageHost trong dó
+                          value={item.messageHost}
+                          disabled
+                          label="Bạn"
+                          color="red"
+                        />
+
+                        <ProFormTextArea
+                          // hiện thị tin nhán của messageHost trong dó
+                          placeholder={'chưa có trả lời'}
+                          value={item.messageCustomer}
+                          disabled
+                          label="Khách hàng"
                         />
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Input.Search
-                            placeholder="Type your message here..."
+                            //
                             enterButton={<SendOutlined />}
                             onSearch={handleSendMessage}
                             style={{ flex: 1 }}
@@ -621,6 +827,7 @@ const User = (props) => {
                 ))}
               </Modal>
             </ProCard>
+
             <ProCard colSpan={8} style={{ height: 600 }} ghost direction="column">
               <ProCard>
                 <h1 style={{ textDecoration: 'underline' }}>CHIM</h1>
@@ -631,9 +838,9 @@ const User = (props) => {
                   style={{ width: '10%', height: '10%' }}
                 />  */}
                 <h3>Loại chim:</h3>
-                <ProFormText width="md" disabled={true} placeholder={booking?.typeOfBird} />
-                <h3>Sức khỏe - Bệnh lý:</h3>
-                <ProFormText height={100} disabled={true} placeholder={'Bình thường'} />
+                <ProFormText width="md" value={booking?.typeOfBird} />
+                {/* <h3>Sức khỏe - Bệnh lý:</h3>
+                <ProFormText height={100} value={'Bình thường'} /> */}
               </ProCard>
               <ProCard
                 //cách trên 18px
@@ -641,11 +848,11 @@ const User = (props) => {
               >
                 <h1 style={{ textDecoration: 'underline' }}>KHÁCH HÀNG</h1>
                 <h3>Họ và tên:</h3>
-                <ProFormText width="md" disabled={true} placeholder={booking?.customerName} />
+                <ProFormText width="md" value={booking?.customerName} />
                 <h3>SĐT:</h3>
-                <ProFormText width="md" disabled={true} placeholder={'038965973933'} />
+                <ProFormText width="md" value={'038965973933'} />
                 <h3>Email:</h3>
-                <ProFormText height={100} disabled={true} placeholder={'caucavuighe@gmail.com'} />
+                <ProFormText height={100} value={'caucavuighe@gmail.com'} />
               </ProCard>
             </ProCard>
           </ProCard>

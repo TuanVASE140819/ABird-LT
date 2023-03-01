@@ -372,6 +372,12 @@ const Service = () => {
     }
   };
 
+  const handleModal = () => {
+    setShowModel(!showModal);
+    setFlagEditForm('');
+    setUserRecord(null);
+  };
+
   const handleCancelModel = () => {
     setShowModel(false);
     setButtonLoading(false);
