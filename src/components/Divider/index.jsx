@@ -1,9 +1,25 @@
 import { StatisticCard } from '@ant-design/pro-components';
 import RcResizeObserver from 'rc-resize-observer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-export default function ABC({ data }) {
+export default function ABC() {
   const [responsive, setResponsive] = useState(false);
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+    const accountId = localStorage.getItem('accountId');
+    axios
+      .get(
+        `https://swpbirdboardingv1.azurewebsites.net/api/Home/Gettotaldashboard?accountid=${accountId}`,
+      )
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   return (
     <RcResizeObserver
@@ -15,28 +31,14 @@ export default function ABC({ data }) {
       <StatisticCard.Group direction={responsive ? 'column' : 'row'}>
         <StatisticCard
           statistic={{
-            title: 'ĐẶT LỊCH THÀNH CÔNG',
-            value: data.sucessBooking,
-            // icon: (<img style={imgStyle} src="https://gw.alipayobjects.com/mdn/rms_7bc6d8/afts/img/A*dr_0RKvVzVwAAAAAAAAAAABkARQnAQ" alt="icon"/>),
+            title: 'TỔNG KHÁCH HÀNG',
+            value: data.customer,
           }}
         />
         <StatisticCard
           statistic={{
-            title: 'KHÁCH HÀNG',
-            value: data.totalCustomer,
-          }}
-        />
-        <StatisticCard
-          statistic={{
-            title: 'TƯ VẤN VIÊN',
-            value: data.totalConsultant,
-          }}
-        />
-        <StatisticCard
-          statistic={{
-            title: 'TỔNG TIỀN TỪ ĐẶT LỊCH (VNĐ)',
-            // totalIncome nhân 1000 để đổi từ triệu sang đồng
-            value: data.totalPriceFromBooking * 1000,
+            title: 'TỔNG DỊCH VU ĐÃ ĐĂT',
+            value: data.service || '2000', // default value if data.totalCustomer is undefined
           }}
         />
       </StatisticCard.Group>

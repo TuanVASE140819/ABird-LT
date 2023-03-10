@@ -6,62 +6,30 @@ import { Avatar, Card, Rate, Skeleton, Switch, Col } from 'antd';
 
 import { ProList } from '@ant-design/pro-components';
 import { Button, Progress, Space, Tag } from 'antd';
-import { useState } from 'react';
 
-const dataSource = [
-  {
-    title: 'Vũ Anh Tuấn',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn A',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn B',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn C',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn D',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Vũ Anh Tuấn',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn A',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn B',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn C',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-  {
-    title: 'Nguyễn Văn D',
-    avatar:
-      'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
-  },
-];
+import { useEffect, useState } from 'react';
+
 export default ({ d }) => {
   const config = {
+    data: topServices.map((item) => ({ month: item.name, value: item.total })),
+    xField: 'month',
+    yField: 'value',
+    label: {
+      position: 'middle',
+      layout: [
+        {
+          type: 'interval-adjust-position',
+        },
+        {
+          type: 'interval-hide-overlap',
+        },
+        {
+          type: 'adjust-color',
+        },
+      ],
+    },
+  };
+  const config1 = {
     data: [...d[1], ...d[2]].map((item) => ({ ...item, value: item.total })),
     isGroup: true,
     xField: 'month',
@@ -93,13 +61,21 @@ export default ({ d }) => {
     },
   };
   const [responsive, setResponsive] = useState(false);
-
+  const [topServices, setTopServices] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const rowSelection = {
     selectedRowKeys,
     onChange: (keys) => setSelectedRowKeys(keys),
   };
+
+  useEffect(() => {
+    fetch('https://swpbirdboardingv1.azurewebsites.net/api/Home/Gettopservice?accountid=3')
+      .then((response) => response.json())
+      .then((data) => setTopServices(data))
+      .catch((error) => console.log(error));
+    console.log('topServices', topServices);
+  }, []);
 
   return (
     <RcResizeObserver
@@ -117,83 +93,15 @@ export default ({ d }) => {
         width="70%"
       >
         <ProCard split="horizontal">
-          <ProCard split="horizontal">
-            {/* <ProCard split="vertical">
-              <StatisticCard
-                statistic={{
-                  title: 'DOANH THU NGÀY',
-
-                  value: d[0].incomeDaily,
-                  description: (
-                    <Statistic
-                      title="Ngày hôm qua"
-                      value={d[0].incomeDailyYesterday}
-                      suffix="%"
-                      trend="down"
-                    />
-                  ),
-                }}
-              />
-            </ProCard> */}
-            <ProCard split="vertical">
-              <StatisticCard
-                statistic={{
-                  title: 'TỔNG RÚT (VNĐ)',
-                  value: d[0].totalWithdrawal * 1000,
-                }}
-              />
-              <StatisticCard
-                statistic={{
-                  title: 'TỔNG NẠP (VNĐ)',
-                  value: d[0].totalDeposit * 1000,
-                }}
-              />
-            </ProCard>
-          </ProCard>
-          <h1>Tỉ lệ rút/nạp</h1>
-          <h5>1 đơn vị = 1,000vnđ</h5>
-          <Column
-            {...config}
-            style={{
-              height: '300px',
-            }}
-          />
-        </ProCard>
-        <ProCard split="horizontal">
           <ProList
             rowKey="id"
             headerTitle="TOP 10 TƯ VẤN VIÊN CÓ LƯỢT ĐẶT LỊCH NHIỀU NHẤT"
             expandable={{ expandedRowKeys, onExpandedRowsChange: setExpandedRowKeys }}
-            dataSource={d[3].map((item) => ({
+            dataSource={topServices.map((item) => ({
               ...item,
-              title: item.fullName,
-              avatar: item.imageUrl,
+              title: item.name,
+              description: item.total,
             }))}
-            metas={{
-              title: {},
-              subTitle: {},
-              description: {
-                render: (_, record) => {
-                  return (
-                    <div>
-                      <Rate disabled value={record.rating} />
-                      <div>{record.email}</div>
-                      <div>{record.phone}</div>
-                      {/* <div>Cấp độ: {record.experience}</div> */}
-                      <div>{record.experience && `Cấp độ: ${record.experience}`}</div>
-                    </div>
-                  );
-                },
-              },
-
-              avatar: {},
-
-              actions: {
-                render: ({ props: { record } }) => {
-                  return <a key="invite">Số lượt đặt lịch thành công : {record.booking}</a>;
-                },
-              },
-            }}
           />
         </ProCard>
       </ProCard>

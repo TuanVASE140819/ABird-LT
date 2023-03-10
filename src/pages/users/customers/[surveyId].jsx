@@ -16,6 +16,8 @@ import {
   List,
   Comment,
   Form,
+  Typography,
+  Tag,
 } from 'antd';
 
 import moment from 'moment';
@@ -33,7 +35,9 @@ import {
   deleteQuestion,
   createReport,
   getReportList,
+  acceptBooking,
 } from '@/services/SurveyService/survey';
+import { getSpecializationsByUserId } from '@/services/UserService/consutanlts';
 import { useModel } from 'umi';
 import { uploadFile } from '@/utils/uploadFile';
 import Profile from '../../survey/component/Profile';
@@ -54,10 +58,21 @@ import TextArea from 'antd/lib/input/TextArea';
 
 const User = (props) => {
   const [open, setOpen] = useState(false);
+  const [openReport, setOpenReport] = useState(false);
 
   const showModal1 = () => {
     setOpen(true);
   };
+  const hideModal1 = () => {
+    setOpen(false);
+  };
+  const showModalReport = () => {
+    setIsModalVisibleReport(true);
+  };
+  const hideModalReport = () => {
+    setIsModalVisibleReport(false);
+  };
+
   const showModalBill = () => {
     setOpen(true);
   };
@@ -82,6 +97,17 @@ const User = (props) => {
     setIsModalOpen(false);
   };
   //config column
+  const handleClickAccept = () => {
+    //https://swpbirdboardingv1.azurewebsites.net/api/Bookings/checkinBooking?id=2
+    axios
+      .get(`https://swpbirdboardingv1.azurewebsites.net/api/Bookings/checkinBooking?id=${surveyId}`)
+      .then((res) => {
+        if (res.status === 200) {
+          message.success('Checkin thành công');
+        }
+      });
+  };
+
   const column = [
     {
       title: 'STT',
@@ -561,7 +587,7 @@ const User = (props) => {
   const { RangePicker } = DatePicker;
 
   const handleCancelInfo = () => {
-    setIsModalVisible(false);
+    setOpen(false);
   };
 
   const [isModalVisibleReport, setIsModalVisibleReport] = useState(false);
@@ -582,7 +608,6 @@ const User = (props) => {
       message.fail('Lưu thất bại');
     }
   };
-
   return (
     <>
       <PageContainer>
@@ -595,18 +620,47 @@ const User = (props) => {
                 height: 610,
               }}
             >
-              <h1 style={{ textDecoration: 'underline' }}>CHI TIẾT LƯU TRÚ</h1>
+              <Typography>
+                <Typography.Title
+                  level={1}
+                  style={{ display: 'inline-block', textDecoration: 'underline' }}
+                >
+                  CHI TIẾT LƯU TRÚ
+                </Typography.Title>
+                <Typography.Text
+                  style={{
+                    display: 'inline-block',
+                    //căn lề bên phải
+                    float: 'right',
+                  }}
+                >
+                  {
+                    // nếu booking?.status === accepted thì hiện thị "Đã duyệt" và có chữ màu vàng cũng như vậy cho booking?.status === pending còn lại thì hiện thị "Chưa duyệt" và có chữ màu đỏ
+
+                    booking?.status === 'accepted' ? (
+                      <Tag color="green">Đã chấp nhận</Tag>
+                    ) : booking?.status === 'waiting' ? (
+                      <Tag color="orange">Đang chờ</Tag>
+                    ) : (
+                      <Tag color="red">Từ chối</Tag>
+                    )
+                  }
+                </Typography.Text>
+              </Typography>
               <h3>Thời điểm nhận:</h3>
               <ProFormText
                 width="md"
-                //
-                value={booking?.dateBooking}
+                value={moment(booking?.dateBooking).format('DD/MM/YYYY')}
                 style={{ color: '#333', fontStyle: 'italic', fontWeight: 'bold' }}
               />
               <h3>Thời điểm trả:</h3>
-              <ProFormText width="md" value={booking?.dateEnd} />
+              <ProFormText width="md" value={moment(booking?.dateEnd).format('DD/MM/YYYY')} />
 
               <h3>Dịch vụ</h3>
+              {/* // ghi chú: để thêm dịch vụ bạn cần ra ngoài đơn hàng và thêm dịch vụ vào đơn hàng đó */}
+              <h5 style={{ color: 'red' }}>
+                Ghi chú: để thêm dịch vụ bạn cần ra ngoài đơn hàng và thêm dịch vụ vào đơn hàng đó
+              </h5>
               <TextArea
                 rows={4}
                 maxLength={6}
@@ -625,18 +679,50 @@ const User = (props) => {
                 >
                   Hoá đơn
                 </Button>
+                <Button
+                  type="primary"
+                  style={{
+                    float: 'right',
+                    //cách bên trái 20px
+                    marginRight: 20,
+                    // nút màu xanh
+                    backgroundColor: '#52c41a',
+                  }}
+                  onClick={() => {
+                    handleClickAccept();
+                  }}
+                >
+                  {booking?.status === 'accepted' ? 'Đang lưu trú' : 'Check in'}
+                </Button>
+
                 <Button type="primary" onClick={showModal1} style={{ float: 'left' }}>
                   Thông tin chim qua từng ngày
                 </Button>
               </div>
+
               <DrawerForm
                 onOpenChange={setDrawerVisit}
                 title="Hoá đơn"
                 open={drawerVisit}
                 okText="Xuất hoá đơn"
+                // Khi click vào nút xuất hoá đơn thì sẽ call api https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking
+                // và truyền vào bookingId
+                // sau khi call api thành công thì hiện thông báo thành công và đóng form xuất hoá đơn
+                // và reload lại trang
                 onFinish={async () => {
-                  message.success('Xuất hoá đơn thành công');
-                  return true;
+                  try {
+                    const bookingId = localStorage.getItem('bookingId');
+                    await acceptBooking({
+                      bookingId,
+                    });
+                    message.loading('Đang xử lí ...', 9999);
+                    actionRef?.current?.reload();
+                    setIsModalVisibleReport(false);
+                    message.destroy();
+                    message.success('Xuất hoá đơn thành công');
+                  } catch (error) {
+                    message.fail('Lưu thất bại');
+                  }
                 }}
               >
                 <ProForm.Group>
@@ -669,20 +755,20 @@ const User = (props) => {
                     name="contract"
                     disabled
                     label="Ngày nhận :"
-                    value={bill.dateBooking}
+                    value={moment(bill?.dateBooking).format('DD/MM/YYYY')}
                   />
                 </ProForm.Group>
                 <ProFormText
                   name="contract"
                   disabled
                   label="Ngày bắt đầu :"
-                  value={bill.dateStart}
+                  value={moment(bill.dateStart).format('DD/MM/YYYY')}
                 />
                 <ProFormText
                   name="contract"
                   disabled
                   label="Ngày kết thúc  :"
-                  value={bill.dateEnd}
+                  value={moment(bill.dateEnd).format('DD/MM/YYYY')}
                 />
 
                 <ProFormText
@@ -691,6 +777,7 @@ const User = (props) => {
                   label="Dịch vụ :"
                   value={serviceNames.join(', ')}
                 />
+
                 <ProFormText name="project" disabled label="Số ngày:" value={bill.amountDay} />
                 <CheckCard
                   title="Tổng tiền"
@@ -704,7 +791,7 @@ const User = (props) => {
                 title="Thông tin chim qua từng ngày"
                 open={open}
                 onOk={hideModal}
-                onCancel={hideModal}
+                onCancel={hideModal1}
                 footer={null}
                 width={1000}
               >
@@ -719,9 +806,9 @@ const User = (props) => {
                   title="Thông tin tạo báo cáo"
                   visible={isModalVisibleReport}
                   okText="Lưu"
-                  onCancel={handleCancelInfo}
+                  onCancel={hideModalReport}
                   footer={[
-                    <Button key="back" onClick={handleCancelInfo}>
+                    <Button key="back" onClick={hideModalReport}>
                       Hủy bỏ
                     </Button>,
                     <Button form="createReportForm" key="submit" htmlType="submit" type="primary">
@@ -761,7 +848,7 @@ const User = (props) => {
                   <div key={item.id}>
                     <ProCard
                       //flex
-                      title={item.date}
+                      title={moment(item.date).format('DD/MM/YYYY')}
                       extra={
                         <RightOutlined
                           rotate={!collapsed[item.id] ? 90 : undefined}
@@ -776,7 +863,7 @@ const User = (props) => {
                     >
                       {collapsed[item.id] && (
                         <ProCard
-                          title="Video"
+                          // title="Video"
                           style={{ height: 500 }}
                           headerBordered
                           bodyStyle={{ padding: 0 }}
@@ -813,14 +900,14 @@ const User = (props) => {
                           disabled
                           label="Khách hàng"
                         />
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {/* <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Input.Search
                             //
                             enterButton={<SendOutlined />}
                             onSearch={handleSendMessage}
                             style={{ flex: 1 }}
                           />
-                        </div>
+                        </div> */}
                       </div>
                     </ProCard>
                   </div>
@@ -839,6 +926,8 @@ const User = (props) => {
                 />  */}
                 <h3>Loại chim:</h3>
                 <ProFormText width="md" value={booking?.typeOfBird} />
+                <h3>Tên chim:</h3>
+                <ProFormText width="md" value={booking?.birdOfCustomer} />
                 {/* <h3>Sức khỏe - Bệnh lý:</h3>
                 <ProFormText height={100} value={'Bình thường'} /> */}
               </ProCard>

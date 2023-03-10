@@ -7,6 +7,16 @@ export const getSurveyTypeList = (body) => {
   return request.get('api/SurveyTypes/getallsurveytype');
 };
 
+//https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking
+
+export const acceptBooking = async (body) => {
+  try {
+    return request.put('api/Bookings/AcceptBooking', { data: body });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const createReport = async (body) => {
   try {
     //const today = new Date().toISOString().slice(0, 10);

@@ -16,7 +16,9 @@ import request from '@/utils/requestServer';
 export const getBookingList = async (params) => {
   const accountId = localStorage.getItem('accountId');
   return await request
-    .get(`/api/Bookings/GetBookingList?search=&accountid=${accountId}&pagesize=10&pagenumber=1`)
+    .get(
+      `/api/Bookings/GetBookingList?search=${params}&accountid=${accountId}&pagesize=10&pagenumber=1`,
+    )
     .then((res) => {
       console.log('response getBookingList', res.data);
       return {
