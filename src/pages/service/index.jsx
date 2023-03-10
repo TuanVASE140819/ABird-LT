@@ -98,48 +98,48 @@ const Service = () => {
     //   width: 200,
     //   ellipsis: true,
     // },
-    {
-      title: 'Hành Động',
-      dataIndex: 'action',
-      key: 'action',
-      width: 200,
-      ellipsis: true,
-      render: (text, record) => {
-        return (
-          <Space>
-            <Button
-              type="primary"
-              onClick={() => {
-                setFlagEditForm('edit');
-                setButtonSubmitterUser([
-                  {
-                    key: 'clearFieldFormUser',
-                    type: 'default',
-                    click: 'reset',
-                    name: 'Làm mới',
-                    loading: false,
-                  },
-                  {
-                    key: 'submitEditUser',
-                    type: 'primary',
-                    click: 'submit',
-                    name: 'Xác nhận',
-                    loading: false,
-                  },
-                ]);
-                createService(record.id).then((res) => {
-                  console.log(res);
-                  setFormValueAddUser(res.data);
-                  setModalAddUser(true);
-                });
-              }}
-            >
-              <EditOutlined />
-            </Button>
-          </Space>
-        );
-      },
-    },
+    // {
+    //   title: 'Hành Động',
+    //   dataIndex: 'action',
+    //   key: 'action',
+    //   width: 200,
+    //   ellipsis: true,
+    //   render: (text, record) => {
+    //     return (
+    //       <Space>
+    //         <Button
+    //           type="primary"
+    //           onClick={() => {
+    //             setFlagEditForm('edit');
+    //             setButtonSubmitterUser([
+    //               {
+    //                 key: 'clearFieldFormUser',
+    //                 type: 'default',
+    //                 click: 'reset',
+    //                 name: 'Làm mới',
+    //                 loading: false,
+    //               },
+    //               {
+    //                 key: 'submitEditUser',
+    //                 type: 'primary',
+    //                 click: 'submit',
+    //                 name: 'Xác nhận',
+    //                 loading: false,
+    //               },
+    //             ]);
+    //             createService(record.id).then((res) => {
+    //               console.log(res);
+    //               setFormValueAddUser(res.data);
+    //               setModalAddUser(true);
+    //             });
+    //           }}
+    //         >
+    //           <EditOutlined />
+    //         </Button>
+    //       </Space>
+    //     );
+    //   },
+    // },
   ];
 
   const buttonSubmitter = [

@@ -82,7 +82,7 @@ export default defineConfig({
       routes: [
         {
           path: '/users',
-          name: 'Đơn hàng',
+          name: 'Trạng tháiTrạng thái',
           icon: 'shopping-cart',
           access: 'admin',
           hideInMenu: true,

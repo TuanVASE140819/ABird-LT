@@ -1,5 +1,5 @@
 import { EditOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, message, Space, Tag, Rate, Modal } from 'antd';
+import { Button, message, Space, Tag, Rate, Modal, Select } from 'antd';
 import React, { useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
@@ -19,8 +19,37 @@ import Profile from './component/Profile';
 import { history } from 'umi';
 import dayjs from 'dayjs';
 import request from 'umi-request';
+const { Option } = Select;
+
+const data = [
+  {
+    key: '1',
+    status: 'waiting',
+    //...
+  },
+  {
+    key: '2',
+    status: 'accepted',
+    //...
+  },
+  {
+    key: '3',
+    status: 'rejected',
+    //...
+  },
+  {
+    key: '4',
+    status: 'processing',
+  },
+  //...
+];
 
 const User = () => {
+  const [searchText, setSearchText] = React.useState('');
+  const handleSearch = (selected) => {
+    setSearchText(selected);
+  };
+
   const column = [
     {
       title: 'STT',
@@ -96,11 +125,42 @@ const User = () => {
     },
     {
       title: 'Trạng thái',
+      search: true,
       dataIndex: 'status',
       valueType: 'text',
-      search: false,
+      valueEnum: {
+        waiting: {
+          text: 'Đang chờ',
+          status: 'warning',
+        },
+        accepted: {
+          text: 'Đã chấp nhận',
+          status: 'success',
+        },
+        processing: {
+          text: 'Đang xử lý',
+          status: 'processing',
+        },
+        success: {
+          text: 'Hoàn thành',
+          status: 'success',
+        },
+        rejected: {
+          text: 'Đã từ chối',
+          status: 'error',
+        },
+      },
+
       sorter: (a, b) => a.status - b.status,
       tip: 'Trạng thái',
+      searchOptions: {
+        render: (item, { text, type, status }) => {
+          if (type === 'text') {
+            return <Tag color="geekblue">{text}</Tag>;
+          }
+          return item;
+        },
+      },
       render: (text, record) => {
         if (record.status === 'waiting') {
           return <Tag color="warning">Đang chờ</Tag>;
@@ -570,16 +630,22 @@ const User = () => {
         <ProTable
           columns={column}
           rowKey={(record) => record.id}
-          request={async (params, sorter, filter) => {
-            const res = await getBookingList(params);
-            if (res) {
-              console.log(res);
-              setTotal(res.total);
-              return {
-                data: res.data,
-                success: true,
-              };
-            }
+          request={async (params, sort, filter) => {
+            const data = [];
+            await getBookingList(params.status ?? '').then((res) => {
+              console.log('res at table query', res);
+              res?.data?.map((item, index) => {
+                item.number = index + 1;
+                data[index] = item;
+              });
+              setTotal(res?.total);
+            });
+            // }
+
+            return {
+              data: data,
+              success: true,
+            };
           }}
           onReset={true}
           actionRef={actionRef}
