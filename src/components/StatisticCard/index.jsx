@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ProCard, StatisticCard } from '@ant-design/pro-components';
 import RcResizeObserver from 'rc-resize-observer';
 import { Column } from '@ant-design/plots';
@@ -6,34 +7,26 @@ import { Avatar, Card, Rate, Skeleton, Switch, Col } from 'antd';
 
 import { ProList } from '@ant-design/pro-components';
 import { Button, Progress, Space, Tag } from 'antd';
-
-import { useEffect, useState } from 'react';
+import { getTopConsultantsByRate } from '@/services/Report';
+import { log } from '@antv/g2plot/lib/utils';
 
 export default ({ d }) => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const result = await getTopConsultantsByRate();
+      setData(result.slice(0, 5)); // Lấy ra 5 phần tử đầu tiên
+      console.log(result);
+    }
+    fetchData();
+  }, []);
+
   const config = {
-    data: topServices.map((item) => ({ month: item.name, value: item.total })),
-    xField: 'month',
-    yField: 'value',
-    label: {
-      position: 'middle',
-      layout: [
-        {
-          type: 'interval-adjust-position',
-        },
-        {
-          type: 'interval-hide-overlap',
-        },
-        {
-          type: 'adjust-color',
-        },
-      ],
-    },
-  };
-  const config1 = {
-    data: [...d[1], ...d[2]].map((item) => ({ ...item, value: item.total })),
+    data: [...d[1]].map((item) => ({ ...item, total: item.total })),
     isGroup: true,
     xField: 'month',
-    yField: 'value',
+    yField: 'total',
     seriesField: 'name',
 
     /** 设置颜色 */
@@ -61,21 +54,13 @@ export default ({ d }) => {
     },
   };
   const [responsive, setResponsive] = useState(false);
-  const [topServices, setTopServices] = useState([]);
+
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const rowSelection = {
     selectedRowKeys,
     onChange: (keys) => setSelectedRowKeys(keys),
   };
-
-  useEffect(() => {
-    fetch('https://swpbirdboardingv1.azurewebsites.net/api/Home/Gettopservice?accountid=3')
-      .then((response) => response.json())
-      .then((data) => setTopServices(data))
-      .catch((error) => console.log(error));
-    console.log('topServices', topServices);
-  }, []);
 
   return (
     <RcResizeObserver
@@ -90,18 +75,41 @@ export default ({ d }) => {
         split={responsive ? 'horizontal' : 'vertical'}
         headerBordered
         bordered
-        width="70%"
       >
         <ProCard split="horizontal">
+          <ProCard colSpan={21} split="horizontal">
+            <ProCard colSpan={21} split="vertical"></ProCard>
+          </ProCard>
+          <h5>1 đơn vị = 1,000vnđ</h5>
+          <Column
+            {...config}
+            style={{
+              height: '300px',
+            }}
+          />
+        </ProCard>
+        <ProCard
+          colSpan={9}
+          split="horizontal"
+          style={{
+            height: '300px',
+          }}
+        >
           <ProList
             rowKey="id"
-            headerTitle="TOP 10 TƯ VẤN VIÊN CÓ LƯỢT ĐẶT LỊCH NHIỀU NHẤT"
-            expandable={{ expandedRowKeys, onExpandedRowsChange: setExpandedRowKeys }}
-            dataSource={topServices.map((item) => ({
-              ...item,
-              title: item.name,
-              description: item.total,
-            }))}
+            headerTitle="TOP 5 DỊCH VỤ BÁN CHẠY"
+            dataSource={data.length >= 5 ? data.slice(0, 5) : data}
+            metas={{
+              title: {
+                dataIndex: 'serviceName',
+                render: (text) => `Dịch vụ: ${text}`, // Thêm tiền tố "Dịch vụ: "
+              },
+              subTitle: {
+                dataIndex: 'amount',
+                render: (text) => `Số lượng: ${text}`, // Thêm tiền tố "Số lượng: "
+                style: { textAlign: 'right' },
+              },
+            }}
           />
         </ProCard>
       </ProCard>

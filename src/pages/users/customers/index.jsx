@@ -129,24 +129,31 @@ const User = () => {
       dataIndex: 'status',
       valueType: 'text',
       valueEnum: {
-        waiting: {
+        // tất cả
+        '': {
+          text: 'Tất cả',
+          status: '',
+        },
+
+        processing: {
           text: 'Đang chờ',
           status: 'warning',
         },
+        success: {
+          text: 'Thành công',
+          status: 'success',
+        },
+
         accepted: {
           text: 'Đã chấp nhận',
-          status: 'success',
-        },
-        processing: {
-          text: 'Đang xử lý',
-          status: 'processing',
-        },
-        success: {
-          text: 'Hoàn thành',
-          status: 'success',
+          status: 'accepted',
         },
         rejected: {
           text: 'Đã từ chối',
+          status: 'error',
+        },
+        waiting: {
+          text: 'Đang chờ duyệt',
           status: 'error',
         },
       },
@@ -165,9 +172,23 @@ const User = () => {
         if (record.status === 'waiting') {
           return <Tag color="warning">Đang chờ</Tag>;
         } else if (record.status === 'accepted') {
-          return <Tag color="success">Đã chấp nhận</Tag>;
-        } else {
+          return (
+            <Tag
+              color="
+          blue
+          "
+            >
+              Đã chấp nhận
+            </Tag>
+          );
+        } else if (record.status === 'processing') {
+          return <Tag color="warning">Đang lưu trú</Tag>;
+        } else if (record.status === 'rejected') {
           return <Tag color="error">Đã từ chối</Tag>;
+        } else if (record.status === 'success') {
+          return <Tag color="success">Thành công</Tag>;
+        } else if (record.status === 'waiting') {
+          return <Tag color="error">Đang chờ duyệt</Tag>;
         }
       },
     },
@@ -232,6 +253,25 @@ const User = () => {
               }}
             >
               <Button type="primary">Chấp nhận</Button>
+            </a>,
+            <a
+              key="editable"
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Xác nhận từ chối',
+                  content: 'Bạn có chắc chắn muốn từ chối không?',
+                  cancelText: 'Hủy',
+                  onOk: async () => {
+                    console.log(record.id);
+                    await rejectBooking(record.id);
+
+                    message.success('Từ chối thành công');
+                    action?.reload();
+                  },
+                });
+              }}
+            >
+              <Button type="error">Từ chối</Button>
             </a>,
           ];
         } else {
@@ -409,6 +449,17 @@ const User = () => {
     const res = await request(
       // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=1
       `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=${id}`,
+      {
+        method: 'PUT',
+      },
+    );
+    return res;
+  };
+
+  const rejectBooking = async (id) => {
+    const res = await request(
+      // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/cancelBooking?id=1
+      `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/cancelBooking?id=${id}`,
       {
         method: 'PUT',
       },

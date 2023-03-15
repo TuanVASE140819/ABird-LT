@@ -160,25 +160,6 @@ const Service = () => {
   ];
 
   const formFieldAdd = [
-    // {
-    //   fieldType: 'formText',
-    //   key: 'fieldEditUsername',
-    //   label: 'Loại Dịch Vụ',
-    //   width: 'lg',
-    //   placeholder: 'Nhập tên người dùng',
-    //   name: 'name',
-    //   requiredField: 'true',
-    //   ruleMessage: 'hãy nhập tên chuyên môn',
-    // },
-    // {
-    //   "id": "3",
-    //   "name": "test2",
-    //   "type": "test2",
-    //   "unit": "vnd",
-    //   "price": 122,
-    //   "amount": 2,
-    //   "description": "mo ta"
-    // }
     {
       fieldType: 'formText',
       key: 'fieldEditUsername',
@@ -478,7 +459,7 @@ const Service = () => {
               icon={<PlusOutlined />}
               onClick={() => handleModal()}
             >
-              Thêm chuyên môn
+              Thêm dịch vụ mới
             </Button>,
           ]}
         />
@@ -524,17 +505,7 @@ const Service = () => {
             Close
           </Button>,
         ]}
-      >
-        <MapPicker
-          defaultLocation={defaultLocation}
-          zoom={zoom}
-          mapTypeId="roadmap"
-          style={{ height: '700px' }}
-          onChangeLocation={handleChangeLocation}
-          onChangeZoom={handleChangeZoom}
-          apiKey="AIzaSyD07E1VvpsN_0FvsmKAj4nK9GnLq-9jtj8"
-        />
-      </Modal>
+      ></Modal>
     </>
   );
 };

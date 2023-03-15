@@ -95,7 +95,7 @@ const Aspect = (props) => {
     {
       fieldType: 'formSelect',
       key: 'selectAngleType',
-      name: 'angleType',
+      name: 'fangleType',
       label: 'Angle Type',
       placeholder: 'Select Angle Type',
       requiredField: 'true',

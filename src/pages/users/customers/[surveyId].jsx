@@ -18,6 +18,8 @@ import {
   Form,
   Typography,
   Tag,
+  Space,
+  Select,
 } from 'antd';
 
 import moment from 'moment';
@@ -34,10 +36,16 @@ import {
   addQuestion,
   deleteQuestion,
   createReport,
+  updateReport,
   getReportList,
   acceptBooking,
 } from '@/services/SurveyService/survey';
-import { getSpecializationsByUserId } from '@/services/UserService/consutanlts';
+import {
+  getSpecializations,
+  getSpecializationsByUserId,
+  editConsutanltSpecialization,
+  createService,
+} from '@/services/UserService/consutanlts';
 import { useModel } from 'umi';
 import { uploadFile } from '@/utils/uploadFile';
 import Profile from '../../survey/component/Profile';
@@ -55,13 +63,60 @@ import {
 } from '@ant-design/pro-components';
 import styled from 'styled-components';
 import TextArea from 'antd/lib/input/TextArea';
+import { MenuOutlined } from '@ant-design/icons';
+import { arrayMoveImmutable, useRefFunction } from '@ant-design/pro-components';
+import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import { log } from '@antv/g2plot/lib/utils';
 
+const DragHandle = SortableHandle(() => <MenuOutlined style={{ cursor: 'grab', color: '#999' }} />);
+
+const columns = [
+  {
+    title: 'Loại Dịch Vụ',
+    dataIndex: 'name',
+    key: 'name',
+    width: 100,
+    ellipsis: true,
+  },
+
+  {
+    title: 'Giá',
+    dataIndex: 'price',
+    key: 'price',
+    width: 100,
+    ellipsis: true,
+  },
+
+  {
+    title: 'Số Lượng',
+    dataIndex: 'amount',
+    key: 'amount',
+    width: 100,
+    ellipsis: true,
+  },
+  {
+    title: 'Đơn Vị',
+    dataIndex: 'unit',
+    key: 'unit',
+    width: 50,
+    ellipsis: true,
+  },
+  {
+    title: 'Tạm Tính',
+    dataIndex: 'total',
+    key: 'total',
+    width: 100,
+    ellipsis: true,
+  },
+];
 const User = (props) => {
   const [open, setOpen] = useState(false);
   const [openReport, setOpenReport] = useState(false);
+  const [isModalVisibleService, setIsModalVisibleService] = useState(false);
 
   const showModal1 = () => {
     setOpen(true);
+    setFlagEditForm('info');
   };
   const hideModal1 = () => {
     setOpen(false);
@@ -71,6 +126,13 @@ const User = (props) => {
   };
   const hideModalReport = () => {
     setIsModalVisibleReport(false);
+  };
+  const showModalService = () => {
+    setIsModalVisibleService(true);
+    setFlagEditForm('service');
+  };
+  const hideModalService = () => {
+    setIsModalVisibleService(false);
   };
 
   const showModalBill = () => {
@@ -98,12 +160,33 @@ const User = (props) => {
   };
   //config column
   const handleClickAccept = () => {
-    //https://swpbirdboardingv1.azurewebsites.net/api/Bookings/checkinBooking?id=2
     axios
-      .get(`https://swpbirdboardingv1.azurewebsites.net/api/Bookings/checkinBooking?id=${surveyId}`)
+      .put(`https://swpbirdboardingv1.azurewebsites.net/api/Bookings/checkinBooking?id=${surveyId}`)
       .then((res) => {
         if (res.status === 200) {
           message.success('Checkin thành công');
+        }
+      });
+  };
+
+  const handleClickAcceptChapnhan = () => {
+    axios
+      .put(`https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=${surveyId}`)
+      .then((res) => {
+        if (res.status === 200) {
+          message.success('Chấp nhận thành công');
+          //reload
+        }
+      });
+  };
+  // handleClickCancel
+  const handleClickCancel = () => {
+    // https://swpbirdboardingv1.azurewebsites.net/api/Bookings/cancelBooking?id=1
+    axios
+      .put(`https://swpbirdboardingv1.azurewebsites.net/api/Bookings/cancelBooking?id=${surveyId}`)
+      .then((res) => {
+        if (res.status === 200) {
+          message.success('Hủy thành công');
         }
       });
   };
@@ -205,40 +288,47 @@ const User = (props) => {
   ];
 
   const formFieldAdd = [
-    // {
-    //   "bookingId": 0,
-    //   "date": "2023-03-01T15:03:17.101Z",
-    //   "description": "string",
-    //   "msgHost": "string"
-    // }
     {
-      fieldType: 'formText',
-      key: 'fieldAddUsername',
-      label: 'Mô tả',
-      width: 'lg',
-      name: 'description',
-      value: 'description',
+      fieldType: 'formSelect',
+
+      name: 'id',
+      // lấy id của dịch vụ truyền vào
+      label: 'Dịch vụ',
+      placeholder: 'Chọn dịch vụ',
       requiredField: 'true',
+      width: 200,
+      ruleMessage: 'Vui lòng chọn dịch vụ',
+      valueEnum: [],
     },
     {
       fieldType: 'formText',
-      key: 'fieldAddUsername',
-      label: 'Ngày',
+      key: 'amount',
+      label: 'Số lượng',
       width: 'lg',
-      name: 'date',
-      value: 'date',
+      name: 'amount',
+      value: 'amount',
       requiredField: 'true',
-    },
-    {
-      fieldType: 'formText',
-      key: 'fieldAddUsername',
-      label: 'Tin nhắn',
-      width: 'lg',
-      name: 'msgHost',
-      value: 'msgHost',
-      requiredField: 'true',
+      ruleMessage: 'Please enter amount',
     },
   ];
+  axios
+    .get(
+      'https://swpbirdboardingv1.azurewebsites.net/api/Services/GetServiceList?id=3&pagesize=10&pagenumber=1',
+    )
+    .then((response) => {
+      const data = response.data.data;
+      const dataService = [];
+      data.forEach((item) => {
+        dataService.push({
+          valueDisplay: item.name,
+          valueName: item.id,
+        });
+      });
+      formFieldAdd[0].valueEnum = dataService;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 
   const formFieldEdit = [
     {
@@ -285,8 +375,31 @@ const User = (props) => {
   const [location, setLocation] = useState(defaultLocation);
   const [zoom, setZoom] = useState(DefaultZoom);
 
+  const [formFieldEditSpecialist1, setFormFieldEditSpecialist] = React.useState([]);
   const [drawerVisit, setDrawerVisit] = useState(false);
 
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const response = await getSpecializations();
+        if (Array.isArray(response)) {
+          setFormFieldEditSpecialist([
+            {
+              fieldType: 'ProFormSelect',
+              key: 'selectSpecialist',
+              name: 'specialist',
+              // label: 'Chuyên môn',
+
+              options: response.map((item) => ({
+                value: item.id,
+                label: item.name,
+              })),
+            },
+          ]);
+        }
+      } catch (error) {}
+    })();
+  }, []);
   React.useEffect(() => {
     if (loadingUploadImgFirebase) {
       message.loading('Đang tải ...', 9999);
@@ -377,7 +490,7 @@ const User = (props) => {
 
   const handleModal = () => {
     setShowModel(!showModal);
-    setFlagEditForm('');
+    setFlagEditForm('service');
     //vì hàm này ko liên quan đến edit user nên phải set lại user record = null
     setUserRecord(null);
   };
@@ -392,6 +505,28 @@ const User = (props) => {
     if (formUserRef) {
       formUserRef?.current?.resetFields();
     }
+  };
+
+  // Lấy giá trị serviceId từ formFieldAdd
+  const selectedService = formFieldAdd[0].valueEnum.find(
+    (item) => item.valueDisplay === values.name,
+  );
+  const serviceId = selectedService ? selectedService.value : null;
+
+  const handleSubmitFormUser = async (values) => {
+    const bookingId = localStorage.getItem('bookingId');
+
+    await createService({
+      // truyền serviceId vào
+      serviceId: values.id,
+      amount: values.amount,
+      bookingId: bookingId,
+    });
+    setShowModel(false);
+
+    formUserRef?.current?.resetFields();
+    // reload lại trang để hiển thị service mới
+    actionRef?.current?.reload();
   };
 
   const handleResetForm = () => {
@@ -457,7 +592,7 @@ const User = (props) => {
     const bookingId = localStorage.getItem('bookingId');
     axios
       .get(
-        `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingDetail?id=${bookingId}`,
+        `https://swpbirdboardingv1.azurewebsites.net/api/Home/BookingDetail?bookingid=${bookingId}`,
       )
       .then((response) => {
         const booking = response.data.data[0];
@@ -492,16 +627,35 @@ const User = (props) => {
       )
       .then((response) => {
         const data = response.data.data;
+
         data.forEach((item) => {
           item.datetime = moment(item.datetime).format('YYYY-MM-DD HH:mm:ss');
         });
         setBookingReport(data);
-        console.log(data);
       })
       .catch((error) => {
         console.log(error);
       });
   }, []);
+
+  const handleSendMessage = async (value) => {
+    try {
+      const reportId = localStorage.getItem('id');
+      // const id = localStorage.getItem('id');
+      await updateReport({
+        reportId,
+        date: moment(),
+        description: value,
+        msgHost: value,
+      });
+      message.loading('Đang xử lí ...', 9999);
+      actionRef?.current?.reload();
+      setIsModalVisibleReport(false);
+      message.destroy();
+    } catch (error) {
+      message.fail('Lưu thất bại');
+    }
+  };
   const initialMessages = [
     {
       id: 1,
@@ -570,17 +724,6 @@ const User = (props) => {
   `;
   const [messages, setMessages] = useState(initialMessages);
   const [collapsed, setCollapsed] = useState(true);
-  const handleSendMessage = (value) => {
-    if (value) {
-      const newMessage = {
-        id: messages.length + 1,
-        author: 'You',
-        content: value,
-        datetime: new Date().toISOString(),
-      };
-      setMessages([...messages, newMessage]);
-    }
-  };
 
   const [visible, setVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -600,6 +743,7 @@ const User = (props) => {
         description: values.description,
         msgHost: values.message,
       });
+      const descriptionItem = localStorage.getItem('description');
       message.loading('Đang xử lí ...', 9999);
       actionRef?.current?.reload();
       setIsModalVisibleReport(false);
@@ -607,6 +751,76 @@ const User = (props) => {
     } catch (error) {
       message.fail('Lưu thất bại');
     }
+  };
+
+  const [dataSource, setDataSource] = useState([]);
+
+  React.useEffect(() => {
+    const bookingId = localStorage.getItem('bookingId');
+    fetch(
+      `https://swpbirdboardingv1.azurewebsites.net/api/Home/ServiceDetail?bookingid=${bookingId}`,
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        // Convert the received data to match the format of `dataSource`
+        const dataSource = data.data.map((item) => ({
+          key: item.id,
+          name: item.serviceName,
+          price: item.price,
+          amount: item.amount,
+          unit: item.unit,
+          total: item.total,
+        }));
+        setDataSource(dataSource);
+
+        console.log(dataSource);
+      })
+      .catch((error) => console.log(error));
+  }, []);
+
+  const SortableItem = SortableElement((props) => <tr {...props} />);
+  const SortContainer = SortableContainer((props) => <tbody {...props} />);
+
+  const onSortEnd = useRefFunction(({ oldIndex, newIndex }) => {
+    if (oldIndex !== newIndex) {
+      const newData = arrayMoveImmutable({
+        array: [...dataSource],
+        fromIndex: oldIndex,
+        toIndex: newIndex,
+      }).filter((el) => !!el);
+      setDataSource([...newData]);
+    }
+  });
+
+  const DraggableContainer = (props) => (
+    <SortContainer
+      useDragHandle
+      disableAutoscroll
+      helperClass="row-dragging"
+      onSortEnd={onSortEnd}
+      {...props}
+    />
+  );
+
+  const DraggableBodyRow = (props) => {
+    const { className, style, ...restProps } = props;
+    // function findIndex base on Table rowKey props and should always be a right array index
+    const index = dataSource.findIndex((x) => x.key === restProps['data-row-key']);
+    return <SortableItem index={index} {...restProps} />;
+  };
+
+  const handleEditSpecialist = async (record) => {
+    const userId = record?.id;
+    setButtonEditLoading(true);
+    const user = await getSpecializationsByUserId(userId);
+    if (user) {
+      setUserRecord({ id: userId });
+      setShowModel(!showModal);
+      formUserRef?.current?.setFieldsValue({
+        specialist: user.map((item) => item.id),
+      });
+    }
+    setButtonEditLoading(false);
   };
   return (
     <>
@@ -637,12 +851,18 @@ const User = (props) => {
                   {
                     // nếu booking?.status === accepted thì hiện thị "Đã duyệt" và có chữ màu vàng cũng như vậy cho booking?.status === pending còn lại thì hiện thị "Chưa duyệt" và có chữ màu đỏ
 
-                    booking?.status === 'accepted' ? (
-                      <Tag color="green">Đã chấp nhận</Tag>
+                    booking?.status === 'success' ? (
+                      <Tag color="blue">Đã hoàn thành</Tag>
                     ) : booking?.status === 'waiting' ? (
                       <Tag color="orange">Đang chờ</Tag>
+                    ) : booking?.status === 'accepted' ? (
+                      <Tag color="green">Đã chấp nhận</Tag>
+                    ) : booking?.status === 'cancel' ? (
+                      <Tag color="red">Đã hủy</Tag>
+                    ) : booking?.status === 'processing' ? (
+                      <Tag color="blue">Đang lưu trú </Tag>
                     ) : (
-                      <Tag color="red">Từ chối</Tag>
+                      <Tag color="red">Chưa duyệt</Tag>
                     )
                   }
                 </Typography.Text>
@@ -655,20 +875,33 @@ const User = (props) => {
               />
               <h3>Thời điểm trả:</h3>
               <ProFormText width="md" value={moment(booking?.dateEnd).format('DD/MM/YYYY')} />
+              <Button
+                key="editConsutanlt"
+                type="primary"
+                size="middle"
+                // icon eye
+                style={{ float: 'right' }}
+                block={true}
+                onClick={() => handleModal()}
+              >
+                Thêm dịch vụ
+              </Button>
+              <ProTable
+                columns={columns}
+                // bỏ nút làm lại và tìm kiếm
+                search={false}
+                // bỏ setting cột
 
-              <h3>Dịch vụ</h3>
-              {/* // ghi chú: để thêm dịch vụ bạn cần ra ngoài đơn hàng và thêm dịch vụ vào đơn hàng đó */}
-              <h5 style={{ color: 'red' }}>
-                Ghi chú: để thêm dịch vụ bạn cần ra ngoài đơn hàng và thêm dịch vụ vào đơn hàng đó
-              </h5>
-              <TextArea
-                rows={4}
-                maxLength={6}
-                // hiện thị tên sevices trong dó
-                value={serviceNames.join(', ')} // join các tên dịch vụ bằng dấu phẩy và khoảng trắng
-                //
+                rowKey="key"
+                pagination={false}
+                dataSource={dataSource}
+                components={{
+                  body: {
+                    wrapper: DraggableContainer,
+                    row: DraggableBodyRow,
+                  },
+                }}
               />
-
               <div style={{ marginTop: 20 }}>
                 <Button
                   type="primary"
@@ -679,25 +912,128 @@ const User = (props) => {
                 >
                   Hoá đơn
                 </Button>
-                <Button
-                  type="primary"
-                  style={{
-                    float: 'right',
-                    //cách bên trái 20px
-                    marginRight: 20,
-                    // nút màu xanh
-                    backgroundColor: '#52c41a',
-                  }}
-                  onClick={() => {
-                    handleClickAccept();
-                  }}
-                >
-                  {booking?.status === 'accepted' ? 'Đang lưu trú' : 'Check in'}
-                </Button>
 
                 <Button type="primary" onClick={showModal1} style={{ float: 'left' }}>
                   Thông tin chim qua từng ngày
                 </Button>
+
+                {booking?.status === 'processing' ? (
+                  <>
+                    {/* <Button
+                      type="primary"
+                      style={{
+                        float: 'left',
+
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: '#52c41a',
+                      }}
+                      onClick={() => {
+                        handleClickAcceptChapnhan();
+                      }}
+                    >
+                      Chấp nhận
+                    </Button> */}
+                    {/* <Button
+                      type="primary"
+                      style={{
+                        float: 'left',
+                        //cách bên trái 20px
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: 'red',
+                      }}
+                      onClick={() => {
+                        handleClickCancel();
+                      }}
+                    >
+                      Từ chối
+                    </Button> */}
+                    <Button
+                      type="primary"
+                      style={{
+                        float: 'right',
+                        //cách bên trái 20px
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: '#52c41a',
+                      }}
+                    >
+                      {booking?.status === 'accepted' ? 'Check in' : ''}
+                    </Button>
+                  </>
+                ) : booking?.status === 'accepted' ? (
+                  // trang thái accepted hiện thị nút từ chối với nút check in
+                  <>
+                    <Button
+                      type="primary"
+                      style={{
+                        float: 'left',
+                        //cách bên trái 20px
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: 'red',
+                      }}
+                      onClick={() => {
+                        handleClickCancel();
+                      }}
+                    >
+                      Từ chối
+                    </Button>
+                    <Button
+                      type="primary"
+                      style={{
+                        float: 'right',
+                        //cách bên trái 20px
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: '#52c41a',
+                      }}
+                      onClick={() => {
+                        handleClickAccept();
+                        //reload
+                        actionRef?.current?.reload();
+                      }}
+                    >
+                      {booking?.status === 'accepted' ? 'Check in' : ''}
+                    </Button>
+                  </>
+                ) : booking?.status === 'waiting' ? (
+                  <>
+                    <Button
+                      type="primary"
+                      style={{
+                        float: 'left',
+
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: '#52c41a',
+                      }}
+                      onClick={() => {
+                        handleClickAcceptChapnhan();
+                      }}
+                    >
+                      Chấp nhận
+                    </Button>
+                    <Button
+                      type="primary"
+                      style={{
+                        float: 'left',
+                        //cách bên trái 20px
+                        marginRight: 20,
+                        // nút màu xanh
+                        backgroundColor: 'red',
+                      }}
+                      onClick={() => {
+                        handleClickCancel();
+                      }}
+                    >
+                      Từ chối
+                    </Button>
+                  </>
+                ) : (
+                  ''
+                )}
               </div>
 
               <DrawerForm
@@ -705,16 +1041,10 @@ const User = (props) => {
                 title="Hoá đơn"
                 open={drawerVisit}
                 okText="Xuất hoá đơn"
-                // Khi click vào nút xuất hoá đơn thì sẽ call api https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking
-                // và truyền vào bookingId
-                // sau khi call api thành công thì hiện thông báo thành công và đóng form xuất hoá đơn
-                // và reload lại trang
                 onFinish={async () => {
                   try {
                     const bookingId = localStorage.getItem('bookingId');
-                    await acceptBooking({
-                      bookingId,
-                    });
+                    await acceptBooking(bookingId);
                     message.loading('Đang xử lí ...', 9999);
                     actionRef?.current?.reload();
                     setIsModalVisibleReport(false);
@@ -787,132 +1117,166 @@ const User = (props) => {
                   avatar="https://gw.alipayobjects.com/zos/bmw-prod/f601048d-61c2-44d0-bf57-ca1afe7fd92e.svg"
                 />
               </DrawerForm>
-              <Modal
-                title="Thông tin chim qua từng ngày"
-                open={open}
-                onOk={hideModal}
-                onCancel={hideModal1}
-                footer={null}
-                width={1000}
-              >
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsModalVisibleReport(true)}
-                >
-                  Tạo báo cáo
-                </Button>
+              {flagEditForm === 'info' ? (
                 <Modal
-                  title="Thông tin tạo báo cáo"
-                  visible={isModalVisibleReport}
-                  okText="Lưu"
-                  onCancel={hideModalReport}
-                  footer={[
-                    <Button key="back" onClick={hideModalReport}>
-                      Hủy bỏ
-                    </Button>,
-                    <Button form="createReportForm" key="submit" htmlType="submit" type="primary">
-                      Lưu
-                    </Button>,
-                  ]}
+                  title="Thông tin chim qua từng ngày"
+                  open={open}
+                  onOk={hideModal}
+                  onCancel={hideModal1}
+                  footer={null}
+                  width={1000}
                 >
-                  <Form
-                    name="createReportForm"
-                    initialValues={{ remember: true }}
-                    onFinish={handleCreateReportClick}
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsModalVisibleReport(true)}
                   >
-                    <Form.Item
-                      name="date"
-                      label="Ngày"
-                      rules={[{ required: true, message: 'Vui lòng chọn ngày!' }]}
+                    Tạo báo cáo
+                  </Button>
+                  <Modal
+                    title="Thông tin tạo báo cáo"
+                    visible={isModalVisibleReport}
+                    okText="Lưu"
+                    onCancel={hideModalReport}
+                    footer={[
+                      <Button key="back" onClick={hideModalReport}>
+                        Hủy bỏ
+                      </Button>,
+                      <Button form="createReportForm" key="submit" htmlType="submit" type="primary">
+                        Lưu
+                      </Button>,
+                    ]}
+                  >
+                    <Form
+                      name="createReportForm"
+                      initialValues={{ remember: true }}
+                      onFinish={handleCreateReportClick}
                     >
-                      <DatePicker />
-                    </Form.Item>
-                    <Form.Item
-                      name="description"
-                      label="Mô tả"
-                      rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                    <Form.Item
-                      name="message"
-                      label="Thông điệp"
-                      rules={[{ required: true, message: 'Vui lòng nhập thông điệp!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Form>
-                </Modal>
-                {bookingReport?.map((item) => (
-                  <div key={item.id}>
-                    <ProCard
-                      //flex
-                      title={moment(item.date).format('DD/MM/YYYY')}
-                      extra={
-                        <RightOutlined
-                          rotate={!collapsed[item.id] ? 90 : undefined}
-                          onClick={() => {
-                            setCollapsed({ ...collapsed, [item.id]: !collapsed[item.id] });
-                          }}
-                        />
-                      }
-                      style={{ marginBlockStart: 16, backgroundColor: '#f2f2f2' }}
-                      headerBordered
-                      collapsed={!collapsed[item.id]}
-                    >
-                      {collapsed[item.id] && (
-                        <ProCard
-                          // title="Video"
-                          style={{ height: 500 }}
-                          headerBordered
-                          bodyStyle={{ padding: 0 }}
-                        >
-                          <div>
-                            {/* description */}
-                            <div style={{ padding: 16 }}>
-                              <h3>Thông tin</h3>
-                              <p>{item.description}</p>
-                              <iframe
-                                width="100%"
-                                height="315"
-                                src="https://www.youtube.com/embed/KUybRJNfMXE"
-                                title="YouTube video player"
-                              />
-                            </div>
-                          </div>
-                        </ProCard>
-                      )}
-
-                      <div style={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
-                        <ProFormTextArea
-                          // hiện thị tin nhán của messageHost trong dó
-                          value={item.messageHost}
-                          disabled
-                          label="Bạn"
-                          color="red"
-                        />
-
-                        <ProFormTextArea
-                          // hiện thị tin nhán của messageHost trong dó
-                          placeholder={'chưa có trả lời'}
-                          value={item.messageCustomer}
-                          disabled
-                          label="Khách hàng"
-                        />
-                        {/* <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <Input.Search
-                            //
-                            enterButton={<SendOutlined />}
-                            onSearch={handleSendMessage}
-                            style={{ flex: 1 }}
+                      <Form.Item
+                        name="date"
+                        label="Ngày"
+                        rules={[{ required: true, message: 'Vui lòng chọn ngày!' }]}
+                      >
+                        <DatePicker />
+                      </Form.Item>
+                      <Form.Item
+                        name="description"
+                        label="Mô tả"
+                        rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                      <Form.Item
+                        name="message"
+                        label="Thông điệp"
+                        rules={[{ required: true, message: 'Vui lòng nhập thông điệp!' }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Form>
+                  </Modal>
+                  {bookingReport?.map((item) => (
+                    <div key={item.id}>
+                      <ProCard
+                        //flex
+                        title={moment(item.date).format('DD/MM/YYYY')}
+                        extra={
+                          <RightOutlined
+                            rotate={!collapsed[item.id] ? 90 : undefined}
+                            onClick={() => {
+                              setCollapsed({ ...collapsed, [item.id]: !collapsed[item.id] });
+                              // lấy id của báo cáo
+                              localStorage.setItem('id', item.id);
+                            }}
                           />
-                        </div> */}
-                      </div>
-                    </ProCard>
-                  </div>
-                ))}
-              </Modal>
+                        }
+                        style={{ marginBlockStart: 16, backgroundColor: '#f2f2f2' }}
+                        headerBordered
+                        collapsed={!collapsed[item.id]}
+                      >
+                        {collapsed[item.id] && (
+                          <ProCard
+                            // title="Video"
+                            style={{ height: 500 }}
+                            headerBordered
+                            bodyStyle={{ padding: 0 }}
+                          >
+                            <div>
+                              {/* description */}
+                              <div style={{ padding: 16 }}>
+                                <h3>Thông tin</h3>
+                                <p>{item.description}</p>
+                                <iframe
+                                  width="100%"
+                                  height="315"
+                                  src="https://www.youtube.com/embed/KUybRJNfMXE"
+                                  title="YouTube video player"
+                                />
+                              </div>
+                            </div>
+                          </ProCard>
+                        )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
+                          <ProFormTextArea
+                            // hiện thị tin nhán của messageHost trong dó
+                            value={item.messageHost}
+                            disabled
+                            label="Bạn"
+                            color="red"
+                          />
+
+                          <ProFormTextArea
+                            // hiện thị tin nhán của messageHost trong dó
+                            placeholder={'chưa có trả lời'}
+                            value={item.messageCustomer}
+                            disabled
+                            label="Khách hàng"
+                          />
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Input.Search
+                              //
+                              enterButton={<SendOutlined />}
+                              onSearch={handleSendMessage}
+                              style={{ flex: 1 }}
+                            />
+                          </div>
+                        </div>
+                      </ProCard>
+                    </div>
+                  ))}
+                </Modal>
+              ) : (
+                // nếu flagEditForm = 'sevice' thì hiện thị form dịch vụ
+                flagEditForm === 'service' && (
+                  // <ModalForm
+                  //   showModal={showModalService}
+                  //   titleModal="Chỉnh sửa dịch vụ"
+                  //   handleCancelModel={handleCancelModel}
+                  //   formRef={formUserRef}
+                  //   buttonSubmitter={buttonSubmitterUser}
+                  //   handleSubmitForm={handleSubmitFormUser1}
+                  //   formField={formFieldEditSpecialist1}
+                  //   customUpload={customUpload}
+                  //   imgLinkFirebase={imgLinkFirebase}
+                  //   handleResetForm={handleResetForm}
+                  //   buttonLoading={buttonEditLoading}
+                  // />
+                  <ModalForm
+                    showModal={showModal}
+                    titleModal="Thêm dịch vụ"
+                    handleCancelModel={handleCancelModel}
+                    formRef={formUserRef}
+                    buttonSubmitter={buttonSubmitterUser}
+                    handleSubmitForm={handleSubmitFormUser}
+                    formField={formFieldAddUser}
+                    customUpload={customUpload}
+                    imgLinkFirebase={imgLinkFirebase}
+                    handleResetForm={handleResetForm}
+                    handleOpenModalPicker={handleOpenModalPicker}
+                  />
+                )
+              )}
             </ProCard>
 
             <ProCard colSpan={8} style={{ height: 600 }} ghost direction="column">

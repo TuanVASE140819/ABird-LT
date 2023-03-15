@@ -7,11 +7,13 @@ export const getSurveyTypeList = (body) => {
   return request.get('api/SurveyTypes/getallsurveytype');
 };
 
-//https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking
-
-export const acceptBooking = async (body) => {
+// https://swpbirdboardingv1.azurewebsites.net/api/Bookings/AcceptBooking?id=3
+export const acceptBooking = async (id) => {
   try {
-    return request.put('api/Bookings/AcceptBooking', { data: body });
+    const response = await axios.put(
+      `https://swpbirdboardingv1.azurewebsites.net/api/Bookings/SuccessBooking?id=${id}`,
+    );
+    return response.data;
   } catch (error) {
     console.error(error);
   }
@@ -21,6 +23,15 @@ export const createReport = async (body) => {
   try {
     //const today = new Date().toISOString().slice(0, 10);
     return request.post('api/Bookings/CreateReport', { data: body });
+  } catch (error) {
+    console.error(error);
+  }
+};
+// /api/Bookings/UpdateReport
+export const updateReport = async (body) => {
+  try {
+    //const today = new Date().toISOString().slice(0, 10);
+    return request.put('api/Bookings/UpdateReport', { data: body });
   } catch (error) {
     console.error(error);
   }

@@ -1,18 +1,13 @@
 import request from '@/utils/requestServer';
-// /api/Consultants/Getallconsultantbyadmin?search=tt
-// export const getConsutanlts = async (params) => {
-//   return await request
-//     .get(`/api/Consultants/Getallconsultantbyadmin${params ? `?search=${params}` : ''} `)
-//     .then((response) => {
-//       console.log('response getConsutanlts', response);
+// https://swpbirdboardingv1.azurewebsites.net/api/Home/AddService
+export const createService = async (body) => {
+  return await request.post('/api/Home/AddService', {
+    data: {
+      ...body,
+    },
+  });
+};
 
-//       return response;
-//     })
-//     .catch((error) => {
-//       console.log('errorGetConsutanlts', error);
-//     });
-// };
-// https://swpbirdboardingv1.azurewebsites.net/api/Bookings/GetBookingList?accountid=3&pagesize=10&pagenumber=1
 export const getBookingList = async (params) => {
   const accountId = localStorage.getItem('accountId');
   return await request

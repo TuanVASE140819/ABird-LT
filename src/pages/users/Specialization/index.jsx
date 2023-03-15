@@ -367,7 +367,7 @@ const User = () => {
       ) : (
         <ModalForm
           showModal={showModal}
-          titleModal="Thêm chuyên môn"
+          titleModal="Thêm dịch vụ"
           handleCancelModel={handleCancelModel}
           formRef={formUserRef}
           buttonSubmitter={buttonSubmitterUser}
